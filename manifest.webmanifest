@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "iPBooster — iOS Gaming Control",
+  "short_name": "iPBooster",
+  "description": "iOS 26+ gaming launcher with Apple Shortcuts bridge and real network diagnostics.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone"],
+  "orientation": "portrait",
+  "background_color": "#050608",
+  "theme_color": "#050608",
+  "categories": ["games", "utilities"],
+  "icons": [
+    { "src": "./assets/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "./assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
