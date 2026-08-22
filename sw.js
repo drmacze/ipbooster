@@ -1,9 +1,10 @@
-const CACHE = 'ipbooster-v3';
+const CACHE = 'ipbooster-v4-smart-play';
 const CORE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './smart-launch.js',
   './manifest.webmanifest',
   './assets/icon.svg',
   './assets/icon-180.png',
