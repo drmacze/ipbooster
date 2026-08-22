@@ -1,4 +1,4 @@
-const CACHE = 'ipbooster-v4-smart-play';
+const CACHE = 'ipbooster-v5-shortcut-template';
 const CORE = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const CORE = [
   './app.js',
   './smart-launch.js',
   './manifest.webmanifest',
+  './shortcuts/iPBooster%20Play.shortcut',
   './assets/icon.svg',
   './assets/icon-180.png',
   './assets/icon-512.png'
