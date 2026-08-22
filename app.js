@@ -15,19 +15,32 @@
     battery: { label: 'Battery Saver', note: 'Conservative session profile' }
   };
 
+  // Official Indonesian App Store IDs. Artwork is resolved at runtime from
+  // Apple's iTunes Search/Lookup API so the launcher follows current icons.
+  const OFFICIAL_GAMES = {
+    'minecraft': { appStoreId: '479516143' },
+    'mobile legends': { appStoreId: '1160056295' },
+    'mobile legends bang bang': { appStoreId: '1160056295' },
+    'mobile legends: bang bang': { appStoreId: '1160056295' },
+    'call of duty': { appStoreId: '1465688043' },
+    'call of duty mobile': { appStoreId: '1465688043' },
+    'call of duty: mobile': { appStoreId: '1465688043' }
+  };
+
   const defaultGames = [
-    { id: cryptoId(), name: 'Minecraft', emoji: '⛏️', shortcut: '', profile: 'balanced' },
-    { id: cryptoId(), name: 'Mobile Legends', emoji: '⚔️', shortcut: '', profile: 'competitive' },
-    { id: cryptoId(), name: 'Call of Duty', emoji: '🎯', shortcut: '', profile: 'competitive' }
+    { id: cryptoId(), name: 'Minecraft', emoji: '⛏️', shortcut: '', profile: 'balanced', appStoreId: '479516143', artworkUrl: '' },
+    { id: cryptoId(), name: 'Mobile Legends', emoji: '⚔️', shortcut: '', profile: 'competitive', appStoreId: '1160056295', artworkUrl: '' },
+    { id: cryptoId(), name: 'Call of Duty', emoji: '🎯', shortcut: '', profile: 'competitive', appStoreId: '1465688043', artworkUrl: '' }
   ];
 
   const state = {
-    games: load(STORAGE.games, defaultGames),
+    games: load(STORAGE.games, defaultGames).map(withOfficialMetadata),
     profile: localStorage.getItem(STORAGE.profile) || 'competitive',
     history: load(STORAGE.network, []),
     bridge: load(STORAGE.bridge, { statusShortcut: 'iPBooster Device Status' }),
     device: load(STORAGE.device, null),
-    testing: false
+    testing: false,
+    artworkLoading: false
   };
 
   function $(sel, root = document) { return root.querySelector(sel); }
@@ -41,6 +54,17 @@
   function median(values) { const s = [...values].sort((a,b)=>a-b); const m = Math.floor(s.length/2); return s.length % 2 ? s[m] : (s[m-1]+s[m])/2; }
   function avg(values) { return values.reduce((a,b)=>a+b,0) / Math.max(values.length,1); }
   function round(n, digits = 1) { const p = 10 ** digits; return Math.round(n*p)/p; }
+  function normalizeGameName(name = '') { return name.toLowerCase().replace(/[®™]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+
+  function withOfficialMetadata(game) {
+    const known = OFFICIAL_GAMES[normalizeGameName(game?.name)];
+    return {
+      ...game,
+      appStoreId: game?.appStoreId || known?.appStoreId || '',
+      artworkUrl: game?.artworkUrl || '',
+      storeUrl: game?.storeUrl || ''
+    };
+  }
 
   function showToast(message, ms = 2700) {
     const el = $('#toast'); el.textContent = message; el.classList.add('show');
@@ -51,6 +75,78 @@
     $$('.view').forEach(v => v.classList.toggle('active', v.dataset.view === view));
     $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === view));
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function gameArtwork(game, size = 64, lazy = false) {
+    const radius = size >= 60 ? 18 : 15;
+    const shared = `width:${size}px;height:${size}px;border-radius:${radius}px;display:grid;place-items:center;overflow:hidden;background:rgba(255,255,255,.07);box-shadow:0 10px 24px rgba(0,0,0,.22);flex:0 0 auto`;
+    if (game.artworkUrl) {
+      return `<span style="${shared}"><img src="${escapeHtml(game.artworkUrl)}" alt="${escapeHtml(game.name)} official app icon" width="${size}" height="${size}" ${lazy ? 'loading="lazy"' : ''} referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block"></span>`;
+    }
+    return `<span style="${shared};font-size:${Math.round(size * .48)}px">${escapeHtml(game.emoji || '🎮')}</span>`;
+  }
+
+  function itunesJsonp(path, params) {
+    return new Promise((resolve, reject) => {
+      const callback = `ipboosterItunes_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const query = new URLSearchParams({ ...params, callback });
+      const script = document.createElement('script');
+      let timer;
+      const cleanup = () => {
+        clearTimeout(timer);
+        script.remove();
+        try { delete window[callback]; } catch { window[callback] = undefined; }
+      };
+      window[callback] = data => { cleanup(); resolve(data); };
+      script.onerror = () => { cleanup(); reject(new Error('Apple artwork lookup failed')); };
+      script.src = `https://itunes.apple.com/${path}?${query.toString()}`;
+      script.async = true;
+      timer = setTimeout(() => { cleanup(); reject(new Error('Apple artwork lookup timed out')); }, 8000);
+      document.head.appendChild(script);
+    });
+  }
+
+  function pickArtworkResult(data, gameName) {
+    const results = Array.isArray(data?.results) ? data.results : [];
+    if (!results.length) return null;
+    const wanted = normalizeGameName(gameName);
+    return results.find(r => normalizeGameName(r.trackName) === wanted)
+      || results.find(r => normalizeGameName(r.trackName).includes(wanted) || wanted.includes(normalizeGameName(r.trackName)))
+      || results[0];
+  }
+
+  async function resolveOfficialArtwork(game) {
+    let data;
+    if (game.appStoreId) {
+      data = await itunesJsonp('lookup', { id: game.appStoreId, country: 'id', entity: 'software' });
+    } else {
+      data = await itunesJsonp('search', { term: game.name, country: 'id', entity: 'software', limit: '5' });
+    }
+    const result = pickArtworkResult(data, game.name);
+    if (!result) return false;
+    const artwork = result.artworkUrl512 || result.artworkUrl100 || result.artworkUrl60;
+    if (!artwork) return false;
+    game.appStoreId = String(result.trackId || game.appStoreId || '');
+    game.artworkUrl = artwork;
+    game.storeUrl = result.trackViewUrl || game.storeUrl || '';
+    return true;
+  }
+
+  async function hydrateOfficialArtwork() {
+    if (state.artworkLoading) return;
+    const pending = state.games.filter(g => !g.artworkUrl);
+    if (!pending.length) return;
+    state.artworkLoading = true;
+    try {
+      const results = await Promise.allSettled(pending.map(resolveOfficialArtwork));
+      if (results.some(r => r.status === 'fulfilled' && r.value)) {
+        save(STORAGE.games, state.games);
+        renderHome();
+        renderGames();
+      }
+    } finally {
+      state.artworkLoading = false;
+    }
   }
 
   function renderCompatibility() {
@@ -86,7 +182,7 @@
     }
     homeList.innerHTML = state.games.map(g => `
       <button class="game-card glass" data-game-play="${escapeHtml(g.id)}">
-        <div class="game-emoji">${escapeHtml(g.emoji || '🎮')}</div>
+        ${gameArtwork(g, 66)}
         <div><strong>${escapeHtml(g.name)}</strong><small>${escapeHtml(PROFILES[g.profile]?.label || 'Balanced')}</small><div class="play-chip">${g.shortcut ? 'PLAY' : 'SETUP'}</div></div>
       </button>`).join('');
   }
@@ -99,7 +195,7 @@
     }
     root.innerHTML = state.games.map(g => `
       <article class="library-row glass">
-        <div class="library-avatar">${escapeHtml(g.emoji || '🎮')}</div>
+        ${gameArtwork(g, 52, true)}
         <div><strong>${escapeHtml(g.name)}</strong><small>${escapeHtml(PROFILES[g.profile]?.label || 'Balanced')} · ${g.shortcut ? escapeHtml(g.shortcut) : 'Shortcut not configured'}</small></div>
         <div class="row-actions"><button data-game-edit="${escapeHtml(g.id)}">Edit</button><button class="play" data-game-play="${escapeHtml(g.id)}">${g.shortcut ? 'Play' : 'Setup'}</button></div>
       </article>`).join('');
@@ -277,11 +373,25 @@
   function saveGameFromForm(event) {
     event.preventDefault();
     const id = $('#editGameId').value;
-    const game = { id: id || cryptoId(), name: $('#gameName').value.trim(), shortcut: $('#gameShortcut').value.trim(), emoji: $('#gameEmoji').value.trim() || '🎮', profile: $('#gameProfile').value };
+    const previous = state.games.find(g => g.id === id);
+    const name = $('#gameName').value.trim();
+    const known = OFFICIAL_GAMES[normalizeGameName(name)];
+    const game = {
+      id: id || cryptoId(),
+      name,
+      shortcut: $('#gameShortcut').value.trim(),
+      emoji: $('#gameEmoji').value.trim() || '🎮',
+      profile: $('#gameProfile').value,
+      appStoreId: previous?.appStoreId || known?.appStoreId || '',
+      artworkUrl: previous?.name === name ? (previous?.artworkUrl || '') : '',
+      storeUrl: previous?.name === name ? (previous?.storeUrl || '') : ''
+    };
     if (!game.name || !game.shortcut) { showToast('Game name dan Launch Shortcut wajib diisi.'); return; }
     const idx = state.games.findIndex(g => g.id === id);
     if (idx >= 0) state.games[idx] = game; else state.games.unshift(game);
-    save(STORAGE.games, state.games); renderHome(); renderGames(); $('#gameDialog').close(); showToast(idx >= 0 ? 'Game updated.' : 'Game added.');
+    save(STORAGE.games, state.games); renderHome(); renderGames(); $('#gameDialog').close();
+    showToast(idx >= 0 ? 'Game updated. Loading official icon…' : 'Game added. Loading official icon…');
+    hydrateOfficialArtwork();
   }
 
   function cycleProfile() {
@@ -320,7 +430,8 @@
     $('#gameForm').addEventListener('submit', saveGameFromForm);
     $('#installButton').addEventListener('click', installPwa);
     $$('[data-close-dialog]').forEach(btn => btn.addEventListener('click', () => document.getElementById(btn.dataset.closeDialog)?.close()));
-    addEventListener('online', renderNetwork); addEventListener('offline', renderNetwork);
+    addEventListener('online', () => { renderNetwork(); hydrateOfficialArtwork(); });
+    addEventListener('offline', renderNetwork);
   }
 
   async function registerServiceWorker() {
@@ -329,5 +440,11 @@
     }
   }
 
-  handleCallback(); renderCompatibility(); renderAll(); bindEvents(); registerServiceWorker();
+  save(STORAGE.games, state.games);
+  handleCallback();
+  renderCompatibility();
+  renderAll();
+  bindEvents();
+  registerServiceWorker();
+  hydrateOfficialArtwork();
 })();
