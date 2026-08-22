@@ -1,73 +1,86 @@
-# iPBooster
+# iPBooster v2
 
-**iPBooster** is a mobile-first PWA built specifically for **iOS/iPadOS 26+**. It is a gaming control launcher that deliberately avoids fake “RAM cleaner / CPU booster / force 120 FPS” claims.
+iPBooster is a mobile-first **iOS/iPadOS 26+ gaming control PWA**. It is intentionally designed around capabilities that a web app and Apple Shortcuts can actually use, rather than fake RAM/CPU/FPS booster controls.
 
-## What actually works
+## v2 highlights
 
-- **Installable PWA** with standalone Home Screen layout, safe-area support, offline shell and an iOS-inspired glass UI.
-- **Game launcher** where each game maps to a real Apple Shortcut created by the user.
-- **Apple Shortcuts x-callback bridge** using `shortcuts://x-callback-url/run-shortcut`, including callback handling and JSON result parsing.
-- **Real network diagnostics**: HTTP latency, jitter, download and upload throughput using actual traffic against Cloudflare Speed endpoints. Upload gracefully reports unavailable if the route/browser blocks it.
-- **Local history and settings** via `localStorage`; no account and no tracking backend required.
-- **iOS 26+ compatibility messaging** with standalone/PWA detection.
+- **Gaming Readiness** score based on launcher setup state (iOS/PWA state, bridge, fresh network test, configured game shortcuts, official artwork). It is **not** a CPU/GPU benchmark.
+- **Official App Store game search** for Indonesia through Apple’s Search API, including current game icons and metadata.
+- **Per-game Apple Shortcut launchers**. Game launch now uses `shortcuts://run-shortcut` without an `x-success` callback so a launch Shortcut can finish by opening the game without forcing the browser back to the foreground.
+- **Device Status bridge** continues to use `shortcuts://x-callback-url/run-shortcut` because that workflow intentionally needs a text result returned to iPBooster.
+- **Real Network Lab** using repeated HTTP latency measurements and real download/upload transfers against Cloudflare Speed endpoints.
+- **Launcher session estimates** saved locally. A session starts when Play is tapped and is finalized when iPBooster returns to the foreground. This is explicitly an estimate; the PWA cannot read another app’s process time.
+- **Local backup export** as JSON.
+- **Installable/offline PWA** with service-worker cache v3.
+- Existing v1 `localStorage` game/network/bridge data is preserved and migrated forward.
 
-## Important truth about Game Mode
+## Why two different Shortcuts URLs?
 
-Apple Game Mode is controlled by iOS. For supported games it turns on automatically when the game runs full screen. A web app cannot honestly force-enable CPU/GPU Game Mode, clear iOS RAM, overclock hardware, or create a system-wide FPS overlay. iPBooster does not fake these controls.
+For a game launch, iPBooster uses:
 
-The useful flow is:
+```text
+shortcuts://run-shortcut?name=...
+```
 
-1. Tap a game in iPBooster.
-2. iPBooster runs the configured game Shortcut through Apple’s URL scheme.
-3. That Shortcut can prepare settings Apple exposes to Shortcuts (for example Gaming Focus, Low Power Mode and volume) and then use **Open App** for that game.
-4. iOS manages Game Mode for supported games.
+For Device Status, where iPBooster needs a result back, it uses:
 
-## Recommended Shortcuts
+```text
+shortcuts://x-callback-url/run-shortcut?name=...&x-success=...
+```
 
-### Device status bridge
+Apple documents both flows. The distinction matters: `x-success` is meant to return to a callback URL after the Shortcut finishes, while a game-launch Shortcut should normally end in **Open App → the game**.
 
-Create a Shortcut named **`iPBooster Device Status`** (or change the name inside the Bridge page). Build it so its final output is JSON text, for example:
+## Recommended per-game Shortcut
+
+Create one Shortcut per game, for example `Play Minecraft`:
+
+1. Receive the text input from iPBooster.
+2. Optionally parse the JSON input to inspect the selected `profile`.
+3. Apply only settings that Apple exposes to Shortcuts (for example Focus, volume, or Low Power Mode).
+4. Finish with **Open App → Minecraft**.
+
+iOS remains responsible for Game Mode and CPU/GPU scheduling.
+
+## Device Status Shortcut
+
+Create a Shortcut named `iPBooster Device Status` (or change the name in the Bridge screen). Make its final text output JSON, for example:
 
 ```json
 {"battery":87,"focus":"Gaming","wifi":"Home 5G"}
 ```
 
-iPBooster calls it using x-callback-url and parses the returned `result` parameter.
-
-### Per-game launch shortcut
-
-Create one Shortcut per game, such as **`Play Minecraft`**. In that Shortcut, add the system actions you want to run before the game and finish with **Open App → Minecraft**. Add the exact Shortcut name to the game inside iPBooster.
-
-This per-game approach is intentional because iOS Shortcuts' **Open App** target is configured in the Shortcut itself rather than being an arbitrary web-app process launch API.
-
-## Network test notes
-
-The Network Lab measures real HTTP request timing and transfer throughput. It does **not** claim to be ICMP ping because Safari does not expose raw sockets to webpages. Results describe the route between the device and the test endpoint, not every route a game server may take.
-
-## GitHub Pages deployment
-
-A Pages workflow is included at `.github/workflows/pages.yml`.
-
-1. In repository **Settings → Pages**, choose **GitHub Actions** as the source if it is not already selected.
-2. Push/merge to `main`.
-3. The workflow uploads the repository as a static Pages artifact and deploys it.
+The exact values available depend on the actions exposed by the installed iOS version.
 
 ## Development
 
-No build step is required. Serve the repository over HTTP/HTTPS so Service Worker features work:
+No build step is required.
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Then open `http://localhost:8080` for desktop preview. Device functionality should be tested on an iPhone/iPad with iOS/iPadOS 26+ and the relevant Shortcuts installed.
+Open `http://localhost:8080` for desktop preview. The real Shortcuts launch/bridge flow must be tested on iPhone/iPad.
 
-## Architecture
+## Deployment
 
-- `index.html` — app shell and views
-- `styles.css` — iOS-inspired responsive UI
-- `app.js` — launcher state, Shortcuts bridge, diagnostics, PWA logic
-- `sw.js` — offline app-shell caching
-- `manifest.webmanifest` — Home Screen/PWA metadata
-- `assets/` — app icons
-- `.github/workflows/pages.yml` — GitHub Pages deployment
+The repository includes a GitHub Pages workflow in `.github/workflows/pages.yml`. Configure repository **Settings → Pages → Source → GitHub Actions** if needed.
+
+Live URL:
+
+```text
+https://drmacze.github.io/ipbooster/
+```
+
+## Important limitations
+
+A PWA cannot honestly:
+
+- force iOS Game Mode;
+- overclock CPU/GPU;
+- force 120 Hz on unsupported hardware;
+- clear iOS RAM on demand;
+- kill arbitrary background apps;
+- display a system-wide FPS overlay over another game;
+- read another app’s exact gameplay duration.
+
+iPBooster avoids presenting those as real controls.

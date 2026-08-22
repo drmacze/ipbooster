@@ -1,18 +1,22 @@
 {
-  "id": "./",
   "name": "iPBooster — iOS Gaming Control",
   "short_name": "iPBooster",
-  "description": "iOS 26+ gaming launcher with Apple Shortcuts bridge and real network diagnostics.",
+  "description": "iOS 26+ gaming launcher with Apple Shortcuts bridge, official App Store game artwork, real network diagnostics and launcher session tracking.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone"],
-  "orientation": "portrait",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#050608",
   "theme_color": "#050608",
+  "orientation": "portrait",
   "categories": ["games", "utilities"],
   "icons": [
-    { "src": "./assets/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "./assets/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
     { "src": "./assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Game Library", "short_name": "Games", "url": "./#games" },
+    { "name": "Network Lab", "short_name": "Network", "url": "./#network" }
   ]
 }

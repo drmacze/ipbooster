@@ -3,78 +3,190 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#06070a" />
+  <meta name="theme-color" content="#050608" />
   <meta name="color-scheme" content="dark" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="iPBooster" />
   <meta name="format-detection" content="telephone=no" />
-  <meta name="description" content="iOS 26+ gaming launcher, network diagnostics, profiles and Apple Shortcuts bridge." />
+  <meta name="description" content="iPBooster — iOS 26+ gaming launcher, Apple Shortcuts bridge, real network diagnostics, official App Store game artwork, and launcher session tracking." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./assets/icon-180.png" />
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>iPBooster — iOS 26 Gaming Control</title>
+  <title>iPBooster — iOS 26+ Gaming Control</title>
 </head>
 <body>
   <div class="ambient ambient-a"></div>
   <div class="ambient ambient-b"></div>
   <div id="compatBanner" class="compat-banner hidden" role="status"></div>
+
   <main class="app-shell">
-    <section id="homeView" class="view active" data-view="home">
+    <section class="view active" data-view="home">
       <header class="topbar">
-        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster</h1></div>
-        <button class="icon-button glass" id="installButton" aria-label="Install iPBooster" title="Install"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg></button>
+        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster <span class="version-chip">v2</span></h1></div>
+        <button id="installButton" class="icon-button glass" aria-label="Install / onboarding" title="Install & setup">＋</button>
       </header>
-      <section class="hero glass strong-glass">
-        <div class="hero-copy"><div class="status-pill"><span class="live-dot"></span><span id="readyLabel">iOS 26+ control ready</span></div><h2>Gaming control yang<br><span>nggak pura-pura.</span></h2><p>Launcher, Shortcuts bridge, profile, dan diagnostics berbasis pengukuran nyata.</p></div>
-        <div class="hero-orb" aria-hidden="true"><div class="orb-core">26</div></div>
+
+      <section class="readiness-card glass strong-glass">
+        <div class="readiness-copy">
+          <div class="status-pill"><span class="live-dot"></span><span id="readyLabel">iOS 26+ target</span></div>
+          <p class="eyebrow readiness-kicker">GAMING READINESS</p>
+          <h2 id="readinessTitle">Set up your launcher</h2>
+          <p id="readinessText">Connect Shortcuts, run a network test, and configure at least one game.</p>
+          <div id="readinessReasons" class="reason-chips"></div>
+        </div>
+        <button class="readiness-ring" data-action="open-onboarding" aria-label="Open setup">
+          <span id="readinessScore">0</span><small>/100</small>
+        </button>
       </section>
+
       <section class="metrics-grid" aria-label="Quick status">
-        <button class="metric glass" data-action="run-network"><span class="metric-icon">↯</span><span class="metric-label">Latency</span><strong id="metricLatency">—</strong><small id="metricJitter">Tap to test</small></button>
-        <button class="metric glass" data-action="open-bridge"><span class="metric-icon">⌁</span><span class="metric-label">iOS Bridge</span><strong id="metricBridge">Setup</strong><small id="metricBridgeSub">Shortcuts</small></button>
+        <button class="metric glass" data-action="run-network"><span class="metric-icon">↯</span><span class="metric-label">Network</span><strong id="metricLatency">—</strong><small id="metricJitter">Tap to test</small></button>
+        <button class="metric glass" data-action="run-device-status"><span class="metric-icon">⌁</span><span class="metric-label">Device</span><strong id="metricBridge">Setup</strong><small id="metricBridgeSub">Shortcuts bridge</small></button>
         <button class="metric glass" data-action="cycle-profile"><span class="metric-icon">◈</span><span class="metric-label">Profile</span><strong id="metricProfile">Competitive</strong><small>Tap to switch</small></button>
       </section>
-      <div class="section-heading"><div><p class="eyebrow">LIBRARY</p><h3>Launch a game</h3></div><button class="text-button" data-action="open-add-game">+ Add</button></div>
+
+      <div class="section-heading"><div><p class="eyebrow">PLAY</p><h3>Continue gaming</h3></div><button class="text-button" data-tab="games">Library</button></div>
       <div id="homeGameList" class="game-strip"></div>
-      <div class="section-heading compact-heading"><div><p class="eyebrow">SYSTEM</p><h3>Quick actions</h3></div></div>
+
+      <div class="section-heading compact-heading"><div><p class="eyebrow">LAST SESSION</p><h3>Launcher activity</h3></div><button class="text-button" data-tab="sessions">History</button></div>
+      <div id="lastSessionCard"></div>
+
+      <div class="section-heading compact-heading"><div><p class="eyebrow">TOOLS</p><h3>Quick actions</h3></div></div>
       <div class="quick-grid">
-        <button class="quick-action glass" data-action="run-device-status"><span class="quick-symbol">⌁</span><span><strong>Device status</strong><small>Ask iOS Shortcut</small></span><span>›</span></button>
-        <button class="quick-action glass" data-action="run-network"><span class="quick-symbol">↯</span><span><strong>Network lab</strong><small>Latency · jitter · speed</small></span><span>›</span></button>
-        <button class="quick-action glass" data-action="open-bridge"><span class="quick-symbol">⌘</span><span><strong>Shortcut bridge</strong><small>Configure real actions</small></span><span>›</span></button>
-        <button class="quick-action glass" data-action="share-app"><span class="quick-symbol">↑</span><span><strong>Share launcher</strong><small>Share this PWA</small></span><span>›</span></button>
+        <button class="quick-action glass" data-action="open-onboarding"><span class="quick-symbol">✓</span><span><strong>Setup assistant</strong><small>Check iOS 26+ readiness</small></span><span>›</span></button>
+        <button class="quick-action glass" data-action="run-network"><span class="quick-symbol">↯</span><span><strong>Network lab</strong><small>Latency · jitter · download · upload</small></span><span>›</span></button>
+        <button class="quick-action glass" data-action="open-bridge"><span class="quick-symbol">⌘</span><span><strong>iOS bridge</strong><small>Shortcuts device data</small></span><span>›</span></button>
+        <button class="quick-action glass" data-action="export-data"><span class="quick-symbol">↑</span><span><strong>Backup data</strong><small>Export launcher settings as JSON</small></span><span>›</span></button>
       </div>
     </section>
-    <section id="gamesView" class="view" data-view="games">
-      <header class="topbar"><div><p class="eyebrow">GAME LIBRARY</p><h1>Games</h1></div><button class="pill-button glass" data-action="open-add-game">+ Add Game</button></header>
-      <p class="page-intro">Setiap tombol Play bisa menjalankan Shortcut milikmu sendiri. Shortcut itu yang menyiapkan Focus, Low Power Mode, volume, lalu membuka game.</p>
+
+    <section class="view" data-view="games">
+      <header class="topbar">
+        <div><p class="eyebrow">OFFICIAL APP STORE DATA</p><h1>Games</h1></div>
+        <button class="pill-button glass" data-action="open-manual-game">+ Manual</button>
+      </header>
+      <p class="page-intro">Cari game di katalog Apple Indonesia. Icon dan metadata diambil dari App Store resmi, lalu hubungkan game itu ke Shortcut milikmu.</p>
+
+      <section class="search-card glass">
+        <div class="search-row">
+          <input id="gameSearchInput" type="search" autocomplete="off" enterkeyhint="search" placeholder="Cari Minecraft, Genshin, PUBG…" />
+          <button id="gameSearchButton" class="small-button">Search</button>
+        </div>
+        <small>Hasil berasal dari Apple Search API. iPBooster tidak membuat atau meniru logo game.</small>
+      </section>
+      <div id="appStoreResults" class="store-results"></div>
+
+      <div class="section-heading compact-heading"><div><p class="eyebrow">YOUR LIBRARY</p><h3>Configured games</h3></div><span id="libraryCount" class="count-chip">0</span></div>
       <div id="gameLibrary" class="library-list"></div>
     </section>
-    <section id="networkView" class="view" data-view="network">
-      <header class="topbar"><div><p class="eyebrow">REAL MEASUREMENT</p><h1>Network Lab</h1></div><span id="onlinePill" class="status-pill"><span class="live-dot"></span>Online</span></header>
-      <p class="page-intro">Tes menggunakan request jaringan sungguhan. Tidak ada angka random. Hasil dipengaruhi rute ke endpoint test dan kondisi jaringan saat ini.</p>
-      <section class="network-gauge glass strong-glass"><div class="gauge-ring" id="gaugeRing"><div><span id="gaugeValue">—</span><small>ms</small></div></div><div><p class="eyebrow">HTTP LATENCY</p><h2 id="networkQuality">Ready to test</h2><p id="networkCaption">Jalankan full test untuk mengukur latency, jitter, download, dan upload.</p></div></section>
-      <div class="network-stats"><div class="stat-card glass"><span>Latency</span><strong id="statLatency">—</strong><small>ms</small></div><div class="stat-card glass"><span>Jitter</span><strong id="statJitter">—</strong><small>ms</small></div><div class="stat-card glass"><span>Download</span><strong id="statDown">—</strong><small>Mbps</small></div><div class="stat-card glass"><span>Upload</span><strong id="statUp">—</strong><small>Mbps</small></div></div>
+
+    <section class="view" data-view="network">
+      <header class="topbar"><div><p class="eyebrow">REAL HTTP MEASUREMENT</p><h1>Network Lab</h1></div><span id="onlinePill" class="status-pill"><span class="live-dot"></span>Online</span></header>
+      <p class="page-intro">Pengukuran memakai trafik sungguhan. Safari tidak memberikan raw socket, jadi angka latency di sini adalah HTTP latency ke endpoint test—bukan ICMP ping ke server game.</p>
+
+      <section class="network-gauge glass strong-glass">
+        <div id="gaugeRing" class="gauge-ring"><div><span id="gaugeValue">—</span><small>ms</small></div></div>
+        <div><p class="eyebrow">CONNECTION QUALITY</p><h2 id="networkQuality">Ready to test</h2><p id="networkCaption">Run a full test to measure this connection.</p></div>
+      </section>
+
+      <div class="network-stats">
+        <div class="stat-card glass"><span>Latency</span><strong id="statLatency">—</strong><small>ms</small></div>
+        <div class="stat-card glass"><span>Jitter</span><strong id="statJitter">—</strong><small>ms</small></div>
+        <div class="stat-card glass"><span>Download</span><strong id="statDown">—</strong><small>Mbps</small></div>
+        <div class="stat-card glass"><span>Upload</span><strong id="statUp">—</strong><small>Mbps</small></div>
+      </div>
+      <div id="browserNetworkInfo" class="mini-info glass hidden"></div>
+
       <button id="fullTestButton" class="primary-button">Run Full Network Test</button>
       <div id="testProgress" class="test-progress hidden"><div class="progress-track"><div id="progressBar"></div></div><p id="progressText">Preparing…</p></div>
-      <section class="info-card glass"><div><span class="info-symbol">i</span></div><div><strong>Apa yang diukur?</strong><p>Latency dan jitter = waktu request HTTP berulang. Download/upload = transfer data aktual ke endpoint Cloudflare Speed. Ini bukan ICMP ping karena Safari tidak memberi akses raw socket.</p></div></section>
-      <div class="section-heading compact-heading"><div><p class="eyebrow">HISTORY</p><h3>Recent tests</h3></div><button id="clearHistory" class="text-button">Clear</button></div><div id="networkHistory" class="history-list"></div>
+
+      <div class="section-heading compact-heading"><div><p class="eyebrow">HISTORY</p><h3>Recent tests</h3></div><button id="clearHistory" class="text-button">Clear</button></div>
+      <div id="networkHistory" class="history-list"></div>
     </section>
-    <section id="bridgeView" class="view" data-view="bridge">
+
+    <section class="view" data-view="sessions">
+      <header class="topbar"><div><p class="eyebrow">LOCAL HISTORY</p><h1>Sessions</h1></div><button id="clearSessions" class="pill-button glass">Clear</button></header>
+      <p class="page-intro">Session duration adalah <strong>launcher estimate</strong>: dihitung dari saat kamu tap Play sampai iPBooster kembali foreground. Web app tidak membaca proses game lain di iOS.</p>
+      <section id="sessionSummary" class="session-summary"></section>
+      <div class="section-heading compact-heading"><div><p class="eyebrow">RECENT</p><h3>Launch history</h3></div></div>
+      <div id="sessionHistory" class="history-list"></div>
+    </section>
+
+    <section class="view" data-view="bridge">
       <header class="topbar"><div><p class="eyebrow">APPLE SHORTCUTS</p><h1>iOS Bridge</h1></div><span class="ios-chip">iOS 26+</span></header>
-      <p class="page-intro">Browser tidak boleh mengubah sistem iOS secara langsung. Bridge ini memanggil Shortcut resmi dengan <code>shortcuts://x-callback-url</code> dan menerima hasilnya kembali.</p>
-      <section class="bridge-status glass strong-glass"><div class="bridge-icon">⌘</div><div><p class="eyebrow">BRIDGE STATUS</p><h2 id="bridgeStatusTitle">Not configured</h2><p id="bridgeStatusText">Isi nama Shortcut status perangkat untuk mengaktifkan callback.</p></div></section>
-      <section class="settings-group glass"><label for="statusShortcutName">Device Status Shortcut</label><div class="input-row"><input id="statusShortcutName" autocomplete="off" placeholder="iPBooster Device Status" /><button id="saveBridge" class="small-button">Save</button></div><small>Shortcut sebaiknya mengeluarkan JSON, contoh: <code>{"battery":87,"focus":"Gaming","wifi":"My Wi‑Fi"}</code>.</small></section>
+      <p class="page-intro">Device Status memakai <code>x-callback-url</code> agar Shortcut dapat mengirim output kembali. Launch game memakai URL scheme biasa agar iPBooster tidak memaksa kembali ke browser setelah Shortcut membuka game.</p>
+
+      <section class="bridge-status glass strong-glass">
+        <div class="bridge-icon">⌘</div>
+        <div><p class="eyebrow">DEVICE BRIDGE</p><h2 id="bridgeStatusTitle">Not configured</h2><p id="bridgeStatusText">Set nama Shortcut yang mengembalikan status perangkat.</p></div>
+      </section>
+
+      <section class="settings-group glass">
+        <label for="statusShortcutName">Device Status Shortcut</label>
+        <div class="input-row"><input id="statusShortcutName" autocomplete="off" placeholder="iPBooster Device Status" /><button id="saveBridge" class="small-button">Save</button></div>
+        <small>Output terakhir sebaiknya JSON text, misalnya <code>{"battery":87,"focus":"Gaming","wifi":"Home 5G"}</code>.</small>
+      </section>
       <button class="primary-button" data-action="run-device-status">Test Device Status Callback</button>
-      <div class="section-heading compact-heading"><div><p class="eyebrow">LAST CALLBACK</p><h3>Device data</h3></div></div><div id="deviceData" class="device-data glass"><p>Belum ada data dari Shortcuts.</p></div>
-      <div class="section-heading compact-heading"><div><p class="eyebrow">SETUP RECIPE</p><h3>Build the real shortcut</h3></div></div>
-      <ol class="recipe glass"><li><span>1</span><div><strong>Create “iPBooster Device Status”</strong><p>Buka Shortcuts dan buat shortcut dengan nama yang sama seperti field di atas.</p></div></li><li><span>2</span><div><strong>Read real device values</strong><p>Tambahkan aksi yang tersedia di iOS untuk Battery Level dan Network Details, lalu susun hasilnya menjadi Dictionary.</p></div></li><li><span>3</span><div><strong>Return JSON text</strong><p>Ubah Dictionary menjadi JSON/text dan jadikan itu output terakhir Shortcut. iPBooster akan menerima output melalui <code>result</code> callback.</p></div></li><li><span>4</span><div><strong>Create one launch Shortcut per game</strong><p>Di shortcut game: atur Gaming Focus / Low Power Mode / volume sesuai kebutuhan, lalu gunakan Open App untuk membuka game tersebut. Masukkan nama Shortcut itu saat menambahkan game.</p></div></li></ol>
-      <section class="truth-card"><strong>System truth</strong><p>Game Mode adalah fitur iOS dan aktif otomatis untuk game yang didukung. iPBooster tidak menampilkan tombol “force Game Mode” palsu. Launcher hanya menyiapkan hal yang memang bisa diotomasi, lalu menyerahkan prioritas CPU/GPU ke iOS.</p></section>
+
+      <div class="section-heading compact-heading"><div><p class="eyebrow">LAST CALLBACK</p><h3>Device data</h3></div></div>
+      <div id="deviceData" class="device-data glass"><p>Belum ada data dari Shortcuts.</p></div>
+
+      <div class="section-heading compact-heading"><div><p class="eyebrow">LAUNCH FLOW</p><h3>Recommended Shortcut</h3></div></div>
+      <ol class="recipe glass">
+        <li><span>1</span><div><strong>Receive shortcut input</strong><p>iPBooster mengirim JSON berisi game, profile, dan timestamp.</p></div></li>
+        <li><span>2</span><div><strong>Apply supported settings</strong><p>Gunakan actions yang memang tersedia di Shortcuts, misalnya Focus, volume, atau Low Power Mode.</p></div></li>
+        <li><span>3</span><div><strong>Open App</strong><p>Jadikan Open App untuk game tersebut sebagai langkah launch. Game Mode tetap dikelola iOS.</p></div></li>
+      </ol>
+      <section class="truth-card"><strong>No fake booster controls</strong><p>iPBooster tidak mengklaim bisa overclock, clear RAM paksa, force 120 Hz, atau membaca FPS game lain. Readiness score mengukur kesiapan setup launcher, bukan benchmark CPU/GPU.</p></section>
     </section>
-    <nav class="tabbar glass" aria-label="Main navigation"><button class="tab active" data-tab="home"><span>⌂</span><small>Home</small></button><button class="tab" data-tab="games"><span>▦</span><small>Games</small></button><button class="tab" data-tab="network"><span>↯</span><small>Network</small></button><button class="tab" data-tab="bridge"><span>⌘</span><small>Bridge</small></button></nav>
+
+    <nav class="tabbar glass" aria-label="Main navigation">
+      <button class="tab active" data-tab="home"><span>⌂</span><small>Home</small></button>
+      <button class="tab" data-tab="games"><span>▦</span><small>Games</small></button>
+      <button class="tab" data-tab="network"><span>↯</span><small>Network</small></button>
+      <button class="tab" data-tab="sessions"><span>◷</span><small>Sessions</small></button>
+      <button class="tab" data-tab="bridge"><span>⌘</span><small>Bridge</small></button>
+    </nav>
   </main>
-  <dialog id="gameDialog" class="modal"><form method="dialog" id="gameForm" class="modal-card glass strong-glass"><div class="modal-head"><div><p class="eyebrow">GAME CONFIG</p><h2 id="dialogTitle">Add Game</h2></div><button value="cancel" class="close-button" aria-label="Close">×</button></div><input type="hidden" id="editGameId" /><label>Game name<input id="gameName" maxlength="40" required placeholder="Minecraft" /></label><label>Launch Shortcut name<input id="gameShortcut" maxlength="80" required placeholder="Play Minecraft" /></label><label>Accent emoji<input id="gameEmoji" maxlength="4" placeholder="🎮" /></label><label>Profile<select id="gameProfile"><option value="competitive">Competitive</option><option value="balanced">Balanced</option><option value="battery">Battery Saver</option></select></label><p class="form-help">Shortcut harus kamu buat di aplikasi Shortcuts dan sebaiknya berakhir dengan aksi <strong>Open App</strong> untuk game ini.</p><button value="default" id="saveGameButton" class="primary-button">Save Game</button></form></dialog>
-  <dialog id="installDialog" class="modal"><div class="modal-card glass strong-glass"><div class="modal-head"><div><p class="eyebrow">PWA INSTALL</p><h2>Add to Home Screen</h2></div><button class="close-button" data-close-dialog="installDialog">×</button></div><div class="install-steps"><p><span>1</span> Buka halaman ini di Safari.</p><p><span>2</span> Tap tombol Share.</p><p><span>3</span> Pilih <strong>Add to Home Screen</strong>.</p><p><span>4</span> Buka iPBooster dari icon Home Screen untuk pengalaman standalone.</p></div></div></dialog>
-  <div id="toast" class="toast glass" role="status" aria-live="polite"></div><script src="./app.js" defer></script>
+
+  <dialog id="gameDialog" class="modal">
+    <form id="gameForm" class="modal-card glass strong-glass">
+      <div class="modal-head"><div><p class="eyebrow">GAME CONFIG</p><h2 id="dialogTitle">Configure Game</h2></div><button type="button" class="close-button" data-close-dialog="gameDialog" aria-label="Close">×</button></div>
+      <div id="gamePreview" class="game-preview"></div>
+      <input type="hidden" id="editGameId" />
+      <input type="hidden" id="gameAppStoreId" />
+      <input type="hidden" id="gameArtworkUrl" />
+      <input type="hidden" id="gameStoreUrl" />
+      <label>Game name<input id="gameName" maxlength="80" required placeholder="Minecraft" /></label>
+      <label>Launch Shortcut name<input id="gameShortcut" maxlength="100" placeholder="Play Minecraft" /></label>
+      <label>Gaming profile<select id="gameProfile"><option value="competitive">Competitive</option><option value="balanced">Balanced</option><option value="battery">Battery Saver</option></select></label>
+      <p class="form-help">Shortcut name boleh dikosongkan dulu, tetapi tombol Play baru aktif setelah Shortcut diisi. Untuk hasil terbaik, buat satu Shortcut per game.</p>
+      <div class="modal-actions"><button type="button" id="deleteGameButton" class="danger-button hidden">Delete</button><button type="submit" class="primary-button">Save Game</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="onboardingDialog" class="modal">
+    <div class="modal-card glass strong-glass">
+      <div class="modal-head"><div><p class="eyebrow">SETUP ASSISTANT</p><h2>Ready for iOS 26+</h2></div><button class="close-button" data-close-dialog="onboardingDialog">×</button></div>
+      <div id="onboardingChecks" class="check-list"></div>
+      <div class="onboarding-actions">
+        <button class="secondary-button" data-action="open-games">Add a game</button>
+        <button class="secondary-button" data-action="open-bridge">Configure bridge</button>
+        <button class="primary-button" data-action="run-network">Test network</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="installDialog" class="modal">
+    <div class="modal-card glass strong-glass">
+      <div class="modal-head"><div><p class="eyebrow">PWA INSTALL</p><h2>Add to Home Screen</h2></div><button class="close-button" data-close-dialog="installDialog">×</button></div>
+      <div class="install-steps"><p><span>1</span>Buka di Safari.</p><p><span>2</span>Tap Share.</p><p><span>3</span>Pilih <strong>Add to Home Screen</strong>.</p><p><span>4</span>Buka iPBooster dari icon Home Screen.</p></div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
+  <script src="./app.js" defer></script>
 </body>
 </html>
