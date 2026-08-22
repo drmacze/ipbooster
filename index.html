@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="iPBooster" />
   <meta name="format-detection" content="telephone=no" />
-  <meta name="description" content="iPBooster — iOS 26+ gaming launcher, Apple Shortcuts bridge, real network diagnostics, official App Store game artwork, and launcher session tracking." />
+  <meta name="description" content="iPBooster — iOS 26+ gaming launcher with Smart Play, device capability detection, real network diagnostics, official App Store artwork, and optional Apple Shortcuts bridge." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./assets/icon-180.png" />
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
@@ -24,7 +24,7 @@
   <main class="app-shell">
     <section class="view active" data-view="home">
       <header class="topbar">
-        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster <span class="version-chip">v2</span></h1></div>
+        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster <span class="version-chip">v2.5</span></h1></div>
         <button id="installButton" class="icon-button glass" aria-label="Install / onboarding" title="Install & setup">＋</button>
       </header>
 
@@ -33,17 +33,15 @@
           <div class="status-pill"><span class="live-dot"></span><span id="readyLabel">iOS 26+ target</span></div>
           <p class="eyebrow readiness-kicker">GAMING READINESS</p>
           <h2 id="readinessTitle">Set up your launcher</h2>
-          <p id="readinessText">Connect Shortcuts, run a network test, and configure at least one game.</p>
+          <p id="readinessText">Set up Smart Play once, run a network test, and add your games.</p>
           <div id="readinessReasons" class="reason-chips"></div>
         </div>
-        <button class="readiness-ring" data-action="open-onboarding" aria-label="Open setup">
-          <span id="readinessScore">0</span><small>/100</small>
-        </button>
+        <button class="readiness-ring" data-action="open-onboarding" aria-label="Open setup"><span id="readinessScore">0</span><small>/100</small></button>
       </section>
 
       <section class="metrics-grid" aria-label="Quick status">
         <button class="metric glass" data-action="run-network"><span class="metric-icon">↯</span><span class="metric-label">Network</span><strong id="metricLatency">—</strong><small id="metricJitter">Tap to test</small></button>
-        <button class="metric glass" data-action="run-device-status"><span class="metric-icon">⌁</span><span class="metric-label">Device</span><strong id="metricBridge">Setup</strong><small id="metricBridgeSub">Shortcuts bridge</small></button>
+        <button class="metric glass" data-action="run-device-status"><span class="metric-icon">⌁</span><span class="metric-label">Device</span><strong id="metricBridge">Setup</strong><small id="metricBridgeSub">Optional bridge</small></button>
         <button class="metric glass" data-action="cycle-profile"><span class="metric-icon">◈</span><span class="metric-label">Profile</span><strong id="metricProfile">Competitive</strong><small>Tap to switch</small></button>
       </section>
 
@@ -57,7 +55,7 @@
       <div class="quick-grid">
         <button class="quick-action glass" data-action="open-onboarding"><span class="quick-symbol">✓</span><span><strong>Setup assistant</strong><small>Check iOS 26+ readiness</small></span><span>›</span></button>
         <button class="quick-action glass" data-action="run-network"><span class="quick-symbol">↯</span><span><strong>Network lab</strong><small>Latency · jitter · download · upload</small></span><span>›</span></button>
-        <button class="quick-action glass" data-action="open-bridge"><span class="quick-symbol">⌘</span><span><strong>iOS bridge</strong><small>Shortcuts device data</small></span><span>›</span></button>
+        <button class="quick-action glass" data-action="open-bridge"><span class="quick-symbol">⌘</span><span><strong>Device & iOS bridge</strong><small>Browser snapshot + optional Shortcuts</small></span><span>›</span></button>
         <button class="quick-action glass" data-action="export-data"><span class="quick-symbol">↑</span><span><strong>Backup data</strong><small>Export launcher settings as JSON</small></span><span>›</span></button>
       </div>
     </section>
@@ -67,7 +65,7 @@
         <div><p class="eyebrow">OFFICIAL APP STORE DATA</p><h1>Games</h1></div>
         <button class="pill-button glass" data-action="open-manual-game">+ Manual</button>
       </header>
-      <p class="page-intro">Cari game di katalog Apple Indonesia. Icon dan metadata diambil dari App Store resmi, lalu hubungkan game itu ke Shortcut milikmu.</p>
+      <p class="page-intro">Cari game di katalog Apple Indonesia. Setelah ditambahkan, tombol Play memakai Smart Play dan tidak perlu Shortcut terpisah untuk setiap game.</p>
 
       <section class="search-card glass">
         <div class="search-row">
@@ -85,12 +83,7 @@
     <section class="view" data-view="network">
       <header class="topbar"><div><p class="eyebrow">REAL HTTP MEASUREMENT</p><h1>Network Lab</h1></div><span id="onlinePill" class="status-pill"><span class="live-dot"></span>Online</span></header>
       <p class="page-intro">Pengukuran memakai trafik sungguhan. Safari tidak memberikan raw socket, jadi angka latency di sini adalah HTTP latency ke endpoint test—bukan ICMP ping ke server game.</p>
-
-      <section class="network-gauge glass strong-glass">
-        <div id="gaugeRing" class="gauge-ring"><div><span id="gaugeValue">—</span><small>ms</small></div></div>
-        <div><p class="eyebrow">CONNECTION QUALITY</p><h2 id="networkQuality">Ready to test</h2><p id="networkCaption">Run a full test to measure this connection.</p></div>
-      </section>
-
+      <section class="network-gauge glass strong-glass"><div id="gaugeRing" class="gauge-ring"><div><span id="gaugeValue">—</span><small>ms</small></div></div><div><p class="eyebrow">CONNECTION QUALITY</p><h2 id="networkQuality">Ready to test</h2><p id="networkCaption">Run a full test to measure this connection.</p></div></section>
       <div class="network-stats">
         <div class="stat-card glass"><span>Latency</span><strong id="statLatency">—</strong><small>ms</small></div>
         <div class="stat-card glass"><span>Jitter</span><strong id="statJitter">—</strong><small>ms</small></div>
@@ -98,10 +91,8 @@
         <div class="stat-card glass"><span>Upload</span><strong id="statUp">—</strong><small>Mbps</small></div>
       </div>
       <div id="browserNetworkInfo" class="mini-info glass hidden"></div>
-
       <button id="fullTestButton" class="primary-button">Run Full Network Test</button>
       <div id="testProgress" class="test-progress hidden"><div class="progress-track"><div id="progressBar"></div></div><p id="progressText">Preparing…</p></div>
-
       <div class="section-heading compact-heading"><div><p class="eyebrow">HISTORY</p><h3>Recent tests</h3></div><button id="clearHistory" class="text-button">Clear</button></div>
       <div id="networkHistory" class="history-list"></div>
     </section>
@@ -115,31 +106,31 @@
     </section>
 
     <section class="view" data-view="bridge">
-      <header class="topbar"><div><p class="eyebrow">APPLE SHORTCUTS</p><h1>iOS Bridge</h1></div><span class="ios-chip">iOS 26+</span></header>
-      <p class="page-intro">Device Status memakai <code>x-callback-url</code> agar Shortcut dapat mengirim output kembali. Launch game memakai URL scheme biasa agar iPBooster tidak memaksa kembali ke browser setelah Shortcut membuka game.</p>
+      <header class="topbar"><div><p class="eyebrow">DEVICE & APPLE SHORTCUTS</p><h1>iOS Bridge</h1></div><span class="ios-chip">iOS 26+</span></header>
+      <p class="page-intro">Device snapshot dasar bekerja tanpa Shortcut. Device Bridge tetap opsional untuk data iOS yang dilindungi. Smart Play memakai satu Universal Launcher untuk membuka semua game.</p>
 
       <section class="bridge-status glass strong-glass">
         <div class="bridge-icon">⌘</div>
-        <div><p class="eyebrow">DEVICE BRIDGE</p><h2 id="bridgeStatusTitle">Not configured</h2><p id="bridgeStatusText">Set nama Shortcut yang mengembalikan status perangkat.</p></div>
+        <div><p class="eyebrow">OPTIONAL DEVICE BRIDGE</p><h2 id="bridgeStatusTitle">Not configured</h2><p id="bridgeStatusText">Set nama Shortcut hanya jika kamu ingin data iOS tambahan.</p></div>
       </section>
 
       <section class="settings-group glass">
         <label for="statusShortcutName">Device Status Shortcut</label>
         <div class="input-row"><input id="statusShortcutName" autocomplete="off" placeholder="iPBooster Device Status" /><button id="saveBridge" class="small-button">Save</button></div>
-        <small>Output terakhir sebaiknya JSON text, misalnya <code>{"battery":87,"focus":"Gaming","wifi":"Home 5G"}</code>.</small>
+        <small>Opsional. Output terakhir sebaiknya JSON text, misalnya <code>{"battery":87,"focus":"Gaming","wifi":"Home 5G"}</code>.</small>
       </section>
-      <button class="primary-button" data-action="run-device-status">Test Device Status Callback</button>
+      <button class="primary-button" data-action="run-device-status">Test Optional Device Callback</button>
 
       <div class="section-heading compact-heading"><div><p class="eyebrow">LAST CALLBACK</p><h3>Device data</h3></div></div>
       <div id="deviceData" class="device-data glass"><p>Belum ada data dari Shortcuts.</p></div>
 
-      <div class="section-heading compact-heading"><div><p class="eyebrow">LAUNCH FLOW</p><h3>Recommended Shortcut</h3></div></div>
+      <div class="section-heading compact-heading"><div><p class="eyebrow">SMART PLAY</p><h3>Universal launcher</h3></div></div>
       <ol class="recipe glass">
-        <li><span>1</span><div><strong>Receive shortcut input</strong><p>iPBooster mengirim JSON berisi game, profile, dan timestamp.</p></div></li>
-        <li><span>2</span><div><strong>Apply supported settings</strong><p>Gunakan actions yang memang tersedia di Shortcuts, misalnya Focus, volume, atau Low Power Mode.</p></div></li>
-        <li><span>3</span><div><strong>Open App</strong><p>Jadikan Open App untuk game tersebut sebagai langkah launch. Game Mode tetap dikelola iOS.</p></div></li>
+        <li><span>1</span><div><strong>One-time Shortcut setup</strong><p>Buat satu Shortcut “iPBooster Play”, bukan satu Shortcut per game.</p></div></li>
+        <li><span>2</span><div><strong>Open App from Shortcut Input</strong><p>Smart Play mengirim nama game sebagai text input ke satu Shortcut tersebut.</p></div></li>
+        <li><span>3</span><div><strong>Game Mode stays native</strong><p>Setelah game terbuka, Game Mode dan prioritas CPU/GPU tetap dikelola iOS.</p></div></li>
       </ol>
-      <section class="truth-card"><strong>No fake booster controls</strong><p>iPBooster tidak mengklaim bisa overclock, clear RAM paksa, force 120 Hz, atau membaca FPS game lain. Readiness score mengukur kesiapan setup launcher, bukan benchmark CPU/GPU.</p></section>
+      <section class="truth-card"><strong>No fake installed-app detection</strong><p>Safari/PWA tidak boleh membaca daftar aplikasi yang terpasang. iPBooster hanya menampilkan kemampuan perangkat yang browser memang boleh baca, lalu memakai Shortcuts atau deep link yang sah untuk launch.</p></section>
     </section>
 
     <nav class="tabbar glass" aria-label="Main navigation">
@@ -160,9 +151,9 @@
       <input type="hidden" id="gameArtworkUrl" />
       <input type="hidden" id="gameStoreUrl" />
       <label>Game name<input id="gameName" maxlength="80" required placeholder="Minecraft" /></label>
-      <label>Launch Shortcut name<input id="gameShortcut" maxlength="100" placeholder="Play Minecraft" /></label>
+      <label>Per-game Shortcut name (optional)<input id="gameShortcut" maxlength="100" placeholder="Leave empty for Smart Play" /></label>
       <label>Gaming profile<select id="gameProfile"><option value="competitive">Competitive</option><option value="balanced">Balanced</option><option value="battery">Battery Saver</option></select></label>
-      <p class="form-help">Shortcut name boleh dikosongkan dulu, tetapi tombol Play baru aktif setelah Shortcut diisi. Untuk hasil terbaik, buat satu Shortcut per game.</p>
+      <p class="form-help">Per-game Shortcut is optional. <strong>Smart Play</strong> can use one Universal Launcher for the entire library.</p>
       <div class="modal-actions"><button type="button" id="deleteGameButton" class="danger-button hidden">Delete</button><button type="submit" class="primary-button">Save Game</button></div>
     </form>
   </dialog>
@@ -173,7 +164,7 @@
       <div id="onboardingChecks" class="check-list"></div>
       <div class="onboarding-actions">
         <button class="secondary-button" data-action="open-games">Add a game</button>
-        <button class="secondary-button" data-action="open-bridge">Configure bridge</button>
+        <button class="secondary-button" data-action="open-bridge">Device info</button>
         <button class="primary-button" data-action="run-network">Test network</button>
       </div>
     </div>
@@ -188,5 +179,6 @@
 
   <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
   <script src="./app.js" defer></script>
+  <script src="./smart-launch.js" defer></script>
 </body>
 </html>
