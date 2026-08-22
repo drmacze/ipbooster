@@ -234,12 +234,23 @@
       location.href = deepLink;
       return;
     }
-    if (!state.config.universalReady || !state.config.universalShortcut?.trim()) {
-      openSmartSetup(game);
+    if (state.config.universalReady && state.config.universalShortcut?.trim()) {
+      beginPendingSession(game);
+      location.href = universalLaunchUrl(game);
       return;
     }
-    beginPendingSession(game);
-    location.href = universalLaunchUrl(game);
+    if (game.shortcut?.trim()) {
+      beginPendingSession(game);
+      const payload = {
+        source: 'iPBooster', version: 2, action: 'launch-game', game: game.name,
+        appStoreId: game.appStoreId || null, bundleId: game.bundleId || null,
+        profile: game.profile || 'balanced', requestedAt: new Date().toISOString()
+      };
+      const params = new URLSearchParams({ name: game.shortcut.trim(), input: 'text', text: JSON.stringify(payload) });
+      location.href = `shortcuts://run-shortcut?${params.toString()}`;
+      return;
+    }
+    openSmartSetup(game);
   }
 
   function injectSmartCards() {
