@@ -30,6 +30,7 @@ jobs:
           node --check router-fix.js
           node --check v3-observer-guard.js
           node --check v3-engine.js
+          node --check v3-readiness.js
           node --check sw.js
       - name: Validate manifest
         run: python -m json.tool manifest.webmanifest > /dev/null
