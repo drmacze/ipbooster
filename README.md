@@ -1,55 +1,97 @@
-# iPBooster v2
+# iPBooster v3
 
-iPBooster is a mobile-first **iOS/iPadOS 26+ gaming control PWA**. It is intentionally designed around capabilities that a web app and Apple Shortcuts can actually use, rather than fake RAM/CPU/FPS booster controls.
+iPBooster is a mobile-first **iOS/iPadOS 26+ gaming control PWA** built around capabilities that Safari/PWA and Apple Shortcuts can actually use. It deliberately avoids fake RAM cleaners, CPU/GPU overclock buttons, fake FPS counters, or claims that a website can force iOS Game Mode.
 
-## v2 highlights
+## v3 highlights
 
-- **Gaming Readiness** score based on launcher setup state (iOS/PWA state, bridge, fresh network test, configured game shortcuts, official artwork). It is **not** a CPU/GPU benchmark.
-- **Official App Store game search** for Indonesia through Apple’s Search API, including current game icons and metadata.
-- **Per-game Apple Shortcut launchers**. Game launch now uses `shortcuts://run-shortcut` without an `x-success` callback so a launch Shortcut can finish by opening the game without forcing the browser back to the foreground.
-- **Device Status bridge** continues to use `shortcuts://x-callback-url/run-shortcut` because that workflow intentionally needs a text result returned to iPBooster.
-- **Real Network Lab** using repeated HTTP latency measurements and real download/upload transfers against Cloudflare Speed endpoints.
-- **Launcher session estimates** saved locally. A session starts when Play is tapped and is finalized when iPBooster returns to the foreground. This is explicitly an estimate; the PWA cannot read another app’s process time.
-- **Local backup export** as JSON.
-- **Installable/offline PWA** with service-worker cache v3.
-- Existing v1 `localStorage` game/network/bridge data is preserved and migrated forward.
+- **Smart Play Router** — one `iPBooster Play` Shortcut can route the entire game library using `If Shortcut Input → Open App` branches.
+- **Smart Launch preflight** — a real, lightweight HTTP latency/jitter check can run before launch when the current measurement is stale.
+- **Profile-aware launch policy** — Competitive, Balanced, and Battery Saver are no longer only labels. They change the real web-side preflight freshness window, sample count, and warning thresholds.
+- **Game Control detail page** — per-game readiness, official App Store artwork, profile, launch count, estimated play time, average session, router state, and network state.
+- **Router & Profile Assistant** — generates the exact branch recipe needed for every game in the local library and clearly separates real web behavior from optional iOS Shortcut actions.
+- **Favorites** — favorite games can be promoted to the v3 control center.
+- **7-day activity analytics** — based only on local launcher-estimated sessions.
+- **Post-game summary** — after returning to iPBooster, the latest estimated session can show duration and the pre-launch network snapshot.
+- **Route verification** — a route is marked verified only after a completed launcher session is observed; this is not presented as installed-app detection.
+- **Real Network Lab** — repeated HTTP latency measurements plus real download/upload transfers against Cloudflare Speed endpoints.
+- **Official App Store metadata** — search, icon, publisher, App Store ID, and bundle metadata come from Apple catalog results rather than generated artwork.
+- **Optional Device Bridge** — Shortcuts `x-callback-url` remains available only for extra iOS data that the PWA cannot read directly.
+- **Offline/installable PWA** — service-worker cache `ipbooster-v8-v3-pipeline` includes the v3 engine and styles.
 
-## Why two different Shortcuts URLs?
+## Smart Play Router
 
-For a game launch, iPBooster uses:
+The working universal launch design on iOS 26 is a text router, not a dynamic `Open App` parameter.
+
+`Open App` requires a real app selected in Shortcuts. Therefore the Shortcut should look like this:
 
 ```text
-shortcuts://run-shortcut?name=...
+If Shortcut Input is "Minecraft"
+    Open App → Minecraft
+Otherwise
+    If Shortcut Input is "Mobile Legends"
+        Open App → Mobile Legends
+    Otherwise
+        If Shortcut Input is "Call of Duty"
+            Open App → Call of Duty
+        Otherwise
+            Show Alert → "Game belum dipetakan"
 ```
 
-For Device Status, where iPBooster needs a result back, it uses:
+iPBooster sends the route key as the Shortcut text input:
 
 ```text
-shortcuts://x-callback-url/run-shortcut?name=...&x-success=...
+shortcuts://run-shortcut?name=iPBooster%20Play&input=text&text=Minecraft
 ```
 
-Apple documents both flows. The distinction matters: `x-success` is meant to return to a callback URL after the Shortcut finishes, while a game-launch Shortcut should normally end in **Open App → the game**.
+The app name in each **Open App** action is selected statically in Shortcuts. iPBooster never claims that arbitrary text can be converted into an iOS App object.
 
-## Recommended per-game Shortcut
+## What profiles really do
 
-Create one Shortcut per game, for example `Play Minecraft`:
+The web-side behavior is real and implemented in v3:
 
-1. Receive the text input from iPBooster.
-2. Optionally parse the JSON input to inspect the selected `profile`.
-3. Apply only settings that Apple exposes to Shortcuts (for example Focus, volume, or Low Power Mode).
-4. Finish with **Open App → Minecraft**.
+| Profile | Fresh network window | Quick samples | Warning threshold |
+| --- | ---: | ---: | --- |
+| Competitive | 5 min | 4 | >80 ms latency or >20 ms jitter |
+| Balanced | 15 min | 3 | >120 ms latency or >30 ms jitter |
+| Battery Saver | 30 min | 2 | >150 ms latency or >40 ms jitter |
 
-iOS remains responsible for Game Mode and CPU/GPU scheduling.
+The Router Assistant may also suggest optional Shortcut actions such as Gaming Focus or Low Power Mode. Those settings are **not** reported as applied unless the user actually adds the actions to the corresponding Shortcut branch.
 
-## Device Status Shortcut
+## Launch flow
 
-Create a Shortcut named `iPBooster Device Status` (or change the name in the Bridge screen). Make its final text output JSON, for example:
+With Smart Play Router configured:
 
-```json
-{"battery":87,"focus":"Gaming","wifi":"Home 5G"}
+```text
+iPBooster Play button
+→ profile-aware freshness check
+→ optional lightweight HTTP latency/jitter preflight
+→ launch readiness/warning
+→ iPBooster Play Shortcut
+→ If Shortcut Input matches game route
+→ Open App → selected game
+→ iOS handles Game Mode natively
 ```
 
-The exact values available depend on the actions exposed by the installed iOS version.
+When a sufficiently long launcher session later returns to the PWA, v3 can record the local estimated duration and mark that game route as having completed a launch before.
+
+## Session tracking
+
+A session begins when iPBooster launches the route and is finalized when the PWA returns to the foreground. This is explicitly a **launcher estimate**. A web app cannot read the process lifetime or exact gameplay duration of another iOS app.
+
+Session data remains local in `localStorage` unless the user explicitly exports a backup.
+
+## Network measurements
+
+The browser does not expose ICMP/raw sockets, so iPBooster measures real HTTP request latency instead of pretending to be an ICMP game-server ping.
+
+- Quick preflight: tiny Cloudflare Speed HTTP requests, latency + jitter only.
+- Full Network Lab: repeated latency samples plus real download/upload transfer tests.
+
+## Device data
+
+The PWA can expose browser-readable information such as iPhone/iPad class, detectable iOS version, screen/viewport information, touch points, exposed logical CPU threads, WebGPU/WebGL availability, service worker support, language, and timezone.
+
+It cannot honestly enumerate installed apps, read arbitrary Wi-Fi SSIDs, inspect another app, or obtain every protected iOS system value. The optional Device Bridge exists for data that Shortcuts can explicitly provide.
 
 ## Development
 
@@ -59,11 +101,11 @@ No build step is required.
 python3 -m http.server 8080
 ```
 
-Open `http://localhost:8080` for desktop preview. The real Shortcuts launch/bridge flow must be tested on iPhone/iPad.
+Open `http://localhost:8080` for desktop preview. Custom Shortcuts URL handling must be tested on an iPhone/iPad.
 
 ## Deployment
 
-The repository includes a GitHub Pages workflow in `.github/workflows/pages.yml`. Configure repository **Settings → Pages → Source → GitHub Actions** if needed.
+The repository includes GitHub Pages deployment support.
 
 Live URL:
 
@@ -71,16 +113,20 @@ Live URL:
 https://drmacze.github.io/ipbooster/
 ```
 
+The v3 engine is loaded by the PWA service worker before the Smart Play Router compatibility layer. This preserves an already-working router while allowing v3 to take over Play when the router is ready.
+
 ## Important limitations
 
 A PWA cannot honestly:
 
 - force iOS Game Mode;
 - overclock CPU/GPU;
-- force 120 Hz on unsupported hardware;
+- force an unsupported refresh rate;
 - clear iOS RAM on demand;
 - kill arbitrary background apps;
+- enumerate every installed application;
 - display a system-wide FPS overlay over another game;
-- read another app’s exact gameplay duration.
+- read another app's exact gameplay duration;
+- silently create or edit arbitrary Shortcuts on the user's device.
 
-iPBooster avoids presenting those as real controls.
+iPBooster treats these as platform boundaries rather than presenting fake controls.
