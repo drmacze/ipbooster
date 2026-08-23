@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="iPBooster" />
   <meta name="format-detection" content="telephone=no" />
-  <meta name="description" content="iPBooster — iOS 26+ gaming launcher with Smart Play, device capability detection, real network diagnostics, official App Store artwork, and optional Apple Shortcuts bridge." />
+  <meta name="description" content="iPBooster — iOS 26+ gaming launcher with Smart Play Router, device capability detection, real network diagnostics, official App Store artwork, and optional Apple Shortcuts bridge." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./assets/icon-180.png" />
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
@@ -24,7 +24,7 @@
   <main class="app-shell">
     <section class="view active" data-view="home">
       <header class="topbar">
-        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster <span class="version-chip">v2.5</span></h1></div>
+        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster <span class="version-chip">v2.7</span></h1></div>
         <button id="installButton" class="icon-button glass" aria-label="Install / onboarding" title="Install & setup">＋</button>
       </header>
 
@@ -33,7 +33,7 @@
           <div class="status-pill"><span class="live-dot"></span><span id="readyLabel">iOS 26+ target</span></div>
           <p class="eyebrow readiness-kicker">GAMING READINESS</p>
           <h2 id="readinessTitle">Set up your launcher</h2>
-          <p id="readinessText">Set up Smart Play once, run a network test, and add your games.</p>
+          <p id="readinessText">Set up Smart Play Router once, run a network test, and add your games.</p>
           <div id="readinessReasons" class="reason-chips"></div>
         </div>
         <button class="readiness-ring" data-action="open-onboarding" aria-label="Open setup"><span id="readinessScore">0</span><small>/100</small></button>
@@ -65,7 +65,7 @@
         <div><p class="eyebrow">OFFICIAL APP STORE DATA</p><h1>Games</h1></div>
         <button class="pill-button glass" data-action="open-manual-game">+ Manual</button>
       </header>
-      <p class="page-intro">Cari game di katalog Apple Indonesia. Setelah ditambahkan, tombol Play memakai Smart Play dan tidak perlu Shortcut terpisah untuk setiap game.</p>
+      <p class="page-intro">Cari game di katalog Apple Indonesia. Smart Play Router mengirim nama game ke satu Shortcut, lalu aksi Jika memilih cabang Buka App yang benar.</p>
 
       <section class="search-card glass">
         <div class="search-row">
@@ -107,7 +107,7 @@
 
     <section class="view" data-view="bridge">
       <header class="topbar"><div><p class="eyebrow">DEVICE & APPLE SHORTCUTS</p><h1>iOS Bridge</h1></div><span class="ios-chip">iOS 26+</span></header>
-      <p class="page-intro">Device snapshot dasar bekerja tanpa Shortcut. Device Bridge tetap opsional untuk data iOS yang dilindungi. Smart Play memakai satu Universal Launcher untuk membuka semua game.</p>
+      <p class="page-intro">Device snapshot dasar bekerja tanpa Shortcut. Device Bridge tetap opsional untuk data iOS yang dilindungi. Smart Play memakai satu Router Shortcut untuk membuka semua game.</p>
 
       <section class="bridge-status glass strong-glass">
         <div class="bridge-icon">⌘</div>
@@ -124,10 +124,10 @@
       <div class="section-heading compact-heading"><div><p class="eyebrow">LAST CALLBACK</p><h3>Device data</h3></div></div>
       <div id="deviceData" class="device-data glass"><p>Belum ada data dari Shortcuts.</p></div>
 
-      <div class="section-heading compact-heading"><div><p class="eyebrow">SMART PLAY</p><h3>Universal launcher</h3></div></div>
+      <div class="section-heading compact-heading"><div><p class="eyebrow">SMART PLAY</p><h3>Universal router</h3></div></div>
       <ol class="recipe glass">
-        <li><span>1</span><div><strong>One-time Shortcut setup</strong><p>Buat satu Shortcut “iPBooster Play”, bukan satu Shortcut per game.</p></div></li>
-        <li><span>2</span><div><strong>Open App from Shortcut Input</strong><p>Smart Play mengirim nama game sebagai text input ke satu Shortcut tersebut.</p></div></li>
+        <li><span>1</span><div><strong>One-time Router Shortcut setup</strong><p>Buat satu Shortcut “iPBooster Play”, bukan satu Shortcut per game.</p></div></li>
+        <li><span>2</span><div><strong>If Shortcut Input → Open App</strong><p>Shortcut Input dipakai di aksi Jika. Setiap cabang Jika berisi Buka App dengan game yang dipilih langsung.</p></div></li>
         <li><span>3</span><div><strong>Game Mode stays native</strong><p>Setelah game terbuka, Game Mode dan prioritas CPU/GPU tetap dikelola iOS.</p></div></li>
       </ol>
       <section class="truth-card"><strong>No fake installed-app detection</strong><p>Safari/PWA tidak boleh membaca daftar aplikasi yang terpasang. iPBooster hanya menampilkan kemampuan perangkat yang browser memang boleh baca, lalu memakai Shortcuts atau deep link yang sah untuk launch.</p></section>
@@ -153,7 +153,7 @@
       <label>Game name<input id="gameName" maxlength="80" required placeholder="Minecraft" /></label>
       <label>Per-game Shortcut name (optional)<input id="gameShortcut" maxlength="100" placeholder="Leave empty for Smart Play" /></label>
       <label>Gaming profile<select id="gameProfile"><option value="competitive">Competitive</option><option value="balanced">Balanced</option><option value="battery">Battery Saver</option></select></label>
-      <p class="form-help">Per-game Shortcut is optional. <strong>Smart Play</strong> can use one Universal Launcher for the entire library.</p>
+      <p class="form-help">Per-game Shortcut is optional. <strong>Smart Play Router</strong> can use one If → Open App Shortcut for the entire library.</p>
       <div class="modal-actions"><button type="button" id="deleteGameButton" class="danger-button hidden">Delete</button><button type="submit" class="primary-button">Save Game</button></div>
     </form>
   </dialog>
@@ -179,6 +179,7 @@
 
   <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
   <script src="./app.js" defer></script>
+  <script src="./router-fix.js" defer></script>
   <script src="./smart-launch.js" defer></script>
 </body>
 </html>
