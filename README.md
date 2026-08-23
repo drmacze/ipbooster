@@ -13,10 +13,12 @@ iPBooster is a mobile-first **iOS/iPadOS 26+ gaming control PWA** built around c
 - **7-day activity analytics** — based only on local launcher-estimated sessions.
 - **Post-game summary** — after returning to iPBooster, the latest estimated session can show duration and the pre-launch network snapshot.
 - **Route verification** — a route is marked verified only after a completed launcher session is observed; this is not presented as installed-app detection.
+- **Router-aware Gaming Readiness** — the main score now follows the v3 architecture instead of requiring one Shortcut per game.
 - **Real Network Lab** — repeated HTTP latency measurements plus real download/upload transfers against Cloudflare Speed endpoints.
 - **Official App Store metadata** — search, icon, publisher, App Store ID, and bundle metadata come from Apple catalog results rather than generated artwork.
 - **Optional Device Bridge** — Shortcuts `x-callback-url` remains available only for extra iOS data that the PWA cannot read directly.
-- **Offline/installable PWA** — service-worker cache `ipbooster-v8-v3-pipeline` includes the v3 engine and styles.
+- **Offline/installable PWA** — service-worker cache `ipbooster-v10-v3-readiness` includes the v3 engine, observer guard, readiness layer, and styles.
+- **Deployment quality gate** — GitHub Pages runs `node --check` on every JavaScript engine and validates the manifest before deployment.
 
 ## Smart Play Router
 
@@ -105,7 +107,7 @@ Open `http://localhost:8080` for desktop preview. Custom Shortcuts URL handling 
 
 ## Deployment
 
-The repository includes GitHub Pages deployment support.
+The repository includes GitHub Pages deployment support. Before upload, the workflow checks JavaScript syntax, validates `manifest.webmanifest`, and verifies the core PWA files exist.
 
 Live URL:
 
@@ -113,7 +115,7 @@ Live URL:
 https://drmacze.github.io/ipbooster/
 ```
 
-The v3 engine is loaded by the PWA service worker before the Smart Play Router compatibility layer. This preserves an already-working router while allowing v3 to take over Play when the router is ready.
+The main HTML loads the observer guard and v3 engine before the Smart Play Router compatibility layer. The service worker keeps the same ordering for cached/offline navigation.
 
 ## Important limitations
 
