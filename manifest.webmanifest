@@ -1,7 +1,7 @@
 {
-  "name": "iPBooster — iOS Gaming Control",
+  "name": "iPBooster v3 — iOS Gaming Control",
   "short_name": "iPBooster",
-  "description": "iOS 26+ gaming launcher with Apple Shortcuts bridge, official App Store game artwork, real network diagnostics and launcher session tracking.",
+  "description": "iOS 26+ gaming launcher with Smart Play Router, profile-aware launch preflight, real network diagnostics, official App Store artwork and local session analytics.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -17,6 +17,7 @@
   ],
   "shortcuts": [
     { "name": "Game Library", "short_name": "Games", "url": "./#games" },
-    { "name": "Network Lab", "short_name": "Network", "url": "./#network" }
+    { "name": "Network Lab", "short_name": "Network", "url": "./#network" },
+    { "name": "Gaming Sessions", "short_name": "Sessions", "url": "./#sessions" }
   ]
 }
