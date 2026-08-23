@@ -9,12 +9,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="iPBooster" />
   <meta name="format-detection" content="telephone=no" />
-  <meta name="description" content="iPBooster — iOS 26+ gaming launcher with Smart Play Router, device capability detection, real network diagnostics, official App Store artwork, and optional Apple Shortcuts bridge." />
+  <meta name="description" content="iPBooster v3 — iOS 26+ gaming control with Smart Play Router, profile-aware launch preflight, real network diagnostics, official App Store artwork and local session analytics." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./assets/icon-180.png" />
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>iPBooster — iOS 26+ Gaming Control</title>
+  <link rel="stylesheet" href="./v3.css" />
+  <title>iPBooster v3 — iOS 26+ Gaming Control</title>
 </head>
 <body>
   <div class="ambient ambient-a"></div>
@@ -24,7 +25,7 @@
   <main class="app-shell">
     <section class="view active" data-view="home">
       <header class="topbar">
-        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster <span class="version-chip">v2.7</span></h1></div>
+        <div><p id="greeting" class="eyebrow">READY TO PLAY</p><h1>iPBooster <span class="version-chip">v3</span></h1></div>
         <button id="installButton" class="icon-button glass" aria-label="Install / onboarding" title="Install & setup">＋</button>
       </header>
 
@@ -33,7 +34,7 @@
           <div class="status-pill"><span class="live-dot"></span><span id="readyLabel">iOS 26+ target</span></div>
           <p class="eyebrow readiness-kicker">GAMING READINESS</p>
           <h2 id="readinessTitle">Set up your launcher</h2>
-          <p id="readinessText">Set up Smart Play Router once, run a network test, and add your games.</p>
+          <p id="readinessText">Smart Play Router + real preflight checks + local session analytics.</p>
           <div id="readinessReasons" class="reason-chips"></div>
         </div>
         <button class="readiness-ring" data-action="open-onboarding" aria-label="Open setup"><span id="readinessScore">0</span><small>/100</small></button>
@@ -179,6 +180,8 @@
 
   <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
   <script src="./app.js" defer></script>
+  <script src="./v3-observer-guard.js" defer></script>
+  <script src="./v3-engine.js" defer></script>
   <script src="./router-fix.js" defer></script>
   <script src="./smart-launch.js" defer></script>
 </body>
