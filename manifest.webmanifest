@@ -1,14 +1,14 @@
 {
-  "name": "iPBooster v3 — iOS Gaming Control",
+  "name": "iPBooster v4 — iOS Gaming Control",
   "short_name": "iPBooster",
-  "description": "iOS 26+ gaming launcher with Smart Play Router, profile-aware launch preflight, real network diagnostics, official App Store artwork and local session analytics.",
+  "description": "iOS 26+ gaming control center with Smart Play, native automation setup, performance preflight, real network diagnostics, official App Store artwork, and local activity history.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#050608",
-  "theme_color": "#050608",
+  "background_color": "#050507",
+  "theme_color": "#050507",
   "orientation": "portrait",
   "categories": ["games", "utilities"],
   "icons": [
@@ -17,7 +17,8 @@
   ],
   "shortcuts": [
     { "name": "Game Library", "short_name": "Games", "url": "./#games" },
-    { "name": "Network Lab", "short_name": "Network", "url": "./#network" },
-    { "name": "Gaming Sessions", "short_name": "Sessions", "url": "./#sessions" }
+    { "name": "Automation", "short_name": "Automation", "url": "./#bridge" },
+    { "name": "Network", "short_name": "Network", "url": "./#network" },
+    { "name": "Profile", "short_name": "Profile", "url": "./#sessions" }
   ]
 }
