@@ -1,4 +1,4 @@
-const CACHE='ipbooster-v15-self-refresh';
+const CACHE='ipbooster-v16-self-refresh';
 const CORE=['./','./index.html','./styles.css','./v3.css','./app.js','./pwa-update.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
 
 async function cacheCore(cacheName=CACHE){
@@ -9,6 +9,7 @@ async function cacheCore(cacheName=CACHE){
 
 async function refreshCore(){
   const cache=await caches.open(CACHE);
+  await Promise.allSettled(CORE.map(path=>cache.delete(path)));
   const results=await Promise.allSettled(CORE.map(async path=>{
     const request=new Request(path,{cache:'reload'});
     const response=await fetch(request,{cache:'no-store'});
