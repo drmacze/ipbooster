@@ -1,0 +1,9 @@
+{
+  "name": "iPBooster Play",
+  "version": "1.0",
+  "distribution": "Apple iCloud Shortcuts",
+  "icloud_url": "https://www.icloud.com/shortcuts/480203c0db2f4fe1b0920ca4cf53900c",
+  "icloud_id": "480203c0db2f4fe1b0920ca4cf53900c",
+  "purpose": "iPBooster Smart Play / Native Gaming System launcher template",
+  "notes": "Install through Apple's iCloud Shortcuts share flow. Native App automations for game opened/closed remain a separate one-time iOS setup."
+}
