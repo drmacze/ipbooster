@@ -1,5 +1,5 @@
-const CACHE='ipbooster-v12-native-gaming-system';
-const CORE=['./','./index.html','./styles.css','./v3.css','./app.js','./performance-engine.js','./native-mode-setup.js','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
+const CACHE='ipbooster-v13-icloud-template';
+const CORE=['./','./index.html','./styles.css','./v3.css','./app.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
 
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -11,11 +11,13 @@ async function upgradeHtml(response){
   let html=await response.text();
   const perf='<script src="./performance-engine.js" defer></script>';
   const native='<script src="./native-mode-setup.js" defer></script>';
+  const template='<script src="./official-shortcut-template.js" defer></script>';
   const guard='<script src="./v3-observer-guard.js" defer></script>';
   const engine='<script src="./v3-engine.js" defer></script>';
   const readiness='<script src="./v3-readiness.js" defer></script>';
   if(!html.includes('performance-engine.js'))html=html.includes(guard)?html.replace(guard,`${perf}\n  ${guard}`):html.replace(engine,`${perf}\n  ${engine}`);
   if(!html.includes('native-mode-setup.js'))html=html.includes(perf)?html.replace(perf,`${perf}\n  ${native}`):html.includes(guard)?html.replace(guard,`${native}\n  ${guard}`):html.replace('</body>',`  ${native}\n</body>`);
+  if(!html.includes('official-shortcut-template.js'))html=html.includes(native)?html.replace(native,`${native}\n  ${template}`):html.includes(guard)?html.replace(guard,`${template}\n  ${guard}`):html.replace('</body>',`  ${template}\n</body>`);
   if(!html.includes('v3-readiness.js')){
     const smart='<script src="./smart-launch.js" defer></script>';
     html=html.includes(smart)?html.replace(smart,`${smart}\n  ${readiness}`):html.replace('</body>',`  ${readiness}\n</body>`);
