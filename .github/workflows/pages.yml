@@ -23,9 +23,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Stamp PWA build
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          data = {
+            "build": os.environ["GITHUB_SHA"],
+            "version": "3.2",
+            "builtAt": datetime.now(timezone.utc).isoformat()
+          }
+          with open("version.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+          PY
+
       - name: Validate JavaScript
         run: |
           node --check app.js
+          node --check pwa-update.js
           node --check performance-engine.js
           node --check native-mode-setup.js
           node --check official-shortcut-template.js
@@ -35,28 +51,36 @@ jobs:
           node --check v3-engine.js
           node --check v3-readiness.js
           node --check sw.js
+
       - name: Validate JSON
         run: |
           python -m json.tool manifest.webmanifest > /dev/null
           python -m json.tool shortcut-template.json > /dev/null
+          python -m json.tool version.json > /dev/null
+
       - name: Verify core PWA files
         run: |
           test -f index.html
           test -f styles.css
           test -f v3.css
+          test -f pwa-update.js
           test -f performance-engine.js
           test -f native-mode-setup.js
           test -f official-shortcut-template.js
           test -f shortcut-template.json
+          test -f version.json
           test -f manifest.webmanifest
           test -f assets/icon-180.png
           test -f assets/icon-512.png
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
