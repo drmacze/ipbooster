@@ -7,7 +7,8 @@
     cfg: 'ipbooster.cyber.v1',
     games: 'ipbooster.games.v1',
     router: 'ipbooster.smartplay.v4',
-    quick: 'ipbooster.quicknet.v3'
+    quick: 'ipbooster.quicknet.v3',
+    pending: 'ipbooster.pending-session.v2'
   };
   const DEFAULT = {
     enabled: false,
@@ -25,8 +26,9 @@
   const enc = v => encodeURIComponent(String(v ?? '')).replace(/[!'()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
   const cfg = () => ({ ...DEFAULT, ...load(K.cfg, {}) });
   const games = () => { const v = load(K.games, []); return Array.isArray(v) ? v : []; };
+  const game = id => games().find(g => String(g.id) === String(id));
   const router = () => load(K.router, {});
-  const routeKey = game => router().targets?.[game?.id]?.routeKey?.trim() || String(game?.name || '').trim();
+  const routeKey = g => router().targets?.[g?.id]?.routeKey?.trim() || String(g?.name || '').trim();
 
   function toast(message, ms = 2800) {
     const el = $('#toast');
@@ -120,7 +122,7 @@
     const root = document.createElement('section');
     root.id = 'cyberModeCard';
     root.className = 'cyber-card';
-    (automation.id === 'ui26AutomationDashboard' ? automation : automation).insertAdjacentElement('afterend', root);
+    automation.insertAdjacentElement('afterend', root);
     refreshCard();
   }
 
@@ -148,11 +150,24 @@
     return current;
   }
 
-  function buildLaunchUrl(game, fallbackUrl = '') {
+  function buildLaunchUrl(g, fallbackUrl = '') {
     const c = cfg();
     if (!c.enabled || !c.modifiedConfirmed || !c.shortcutName.trim()) return fallbackUrl;
-    const payload = `${routeKey(game)}|||${game?.profile || 'balanced'}`;
+    const payload = `${routeKey(g)}|||${g?.profile || 'balanced'}`;
     return `shortcuts://run-shortcut?name=${enc(c.shortcutName)}&input=text&text=${enc(payload)}`;
+  }
+
+  function beginSession(g) {
+    save(K.pending, {
+      id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      gameId: g.id,
+      gameName: g.name,
+      artworkUrl: g.artworkUrl || '',
+      appStoreId: g.appStoreId || '',
+      profile: g.profile || 'balanced',
+      startedAt: Date.now(),
+      cyberMode: { enabled: true, shortcut: cfg().shortcutName, sourceId: COMMUNITY_ID }
+    });
   }
 
   function trimStalePreflight() {
@@ -180,8 +195,33 @@
     return workerTrim();
   }
 
+  async function launchCyber(g) {
+    if (!g) return false;
+    const c = cfg();
+    if (!c.enabled || !c.modifiedConfirmed) return false;
+    beginSession(g);
+    await Promise.race([preLaunchMaintenance(), new Promise(resolve => setTimeout(resolve, 950))]);
+    const r = router();
+    const fallback = `shortcuts://run-shortcut?name=${enc(r.universalShortcut || 'iPBooster Play')}&input=text&text=${enc(routeKey(g))}`;
+    location.href = buildLaunchUrl(g, fallback);
+    return true;
+  }
+
   function bind() {
     document.addEventListener('click', async e => {
+      const perfLaunch = e.target.closest?.('[data-perf-launch]');
+      if (perfLaunch && cfg().enabled && cfg().modifiedConfirmed) {
+        const g = game(perfLaunch.dataset.perfLaunch);
+        if (g) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          $('#perfDialog')?.close();
+          toast(cfg().autoClean ? 'Preparing Cyber Mode + cache maintenance…' : 'Preparing Cyber Mode…', 1800);
+          await launchCyber(g);
+          return;
+        }
+      }
+
       if (e.target.closest?.('[data-cyber-close]')) { $('#cyberModeDialog')?.close(); return; }
       if (e.target.closest?.('[data-cyber-setup]')) { renderDialog(); $('#cyberModeDialog')?.showModal(); return; }
       if (e.target.closest?.('[data-cyber-open-app]')) { location.href = 'shortcuts://'; return; }
@@ -215,6 +255,7 @@
     config: cfg,
     buildLaunchUrl,
     preLaunchMaintenance,
+    launchCyber,
     communityUrl: COMMUNITY_URL,
     recipeText
   };
