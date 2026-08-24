@@ -1,5 +1,5 @@
-const CACHE='ipbooster-v18-ui26';
-const CORE=['./','./index.html','./refresh.html','./styles.css','./v3.css','./ui26.css','./app.js','./pwa-update.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./ui26.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
+const CACHE='ipbooster-v19-ui26-clean';
+const CORE=['./','./index.html','./refresh.html','./styles.css','./v3.css','./ui26.css','./ui26-cleanup.css','./app.js','./pwa-update.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./ui26.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
 
 async function cacheCore(cacheName=CACHE){
   const cache=await caches.open(cacheName);
@@ -58,8 +58,10 @@ async function upgradeHtml(response){
   const readiness='<script src="./v3-readiness.js" defer></script>';
   const ui='<script src="./ui26.js" defer></script>';
   const uiCss='<link rel="stylesheet" href="./ui26.css" />';
+  const cleanupCss='<link rel="stylesheet" href="./ui26-cleanup.css" />';
 
   if(!html.includes('ui26.css')) html=html.includes('</head>')?html.replace('</head>',`  ${uiCss}\n</head>`):html;
+  if(!html.includes('ui26-cleanup.css')) html=html.includes('</head>')?html.replace('</head>',`  ${cleanupCss}\n</head>`):html;
   if(!html.includes('pwa-update.js')){
     const app='<script src="./app.js" defer></script>';
     html=html.includes(app)?html.replace(app,`${app}\n  ${updater}`):html.replace('</body>',`  ${updater}\n</body>`);
