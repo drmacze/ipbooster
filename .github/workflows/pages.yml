@@ -31,7 +31,7 @@ jobs:
           from datetime import datetime, timezone
           data = {
             "build": os.environ["GITHUB_SHA"],
-            "version": "4.0-ui26",
+            "version": "4.1-cyber",
             "builtAt": datetime.now(timezone.utc).isoformat()
           }
           with open("version.json", "w", encoding="utf-8") as f:
@@ -42,6 +42,7 @@ jobs:
         run: |
           node --check app.js
           node --check pwa-update.js
+          node --check cyber-mode.js
           node --check performance-engine.js
           node --check native-mode-setup.js
           node --check official-shortcut-template.js
@@ -62,12 +63,14 @@ jobs:
       - name: Verify core PWA files
         run: |
           test -f index.html
+          test -f refresh.html
           test -f styles.css
           test -f v3.css
           test -f ui26.css
           test -f ui26-cleanup.css
           test -f ui26.js
           test -f pwa-update.js
+          test -f cyber-mode.js
           test -f performance-engine.js
           test -f native-mode-setup.js
           test -f official-shortcut-template.js
