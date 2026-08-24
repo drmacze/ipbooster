@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050608" />
+  <meta name="color-scheme" content="dark" />
+  <title>Refresh iPBooster</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#050608;color:#f7f8fb;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif}body{min-height:100dvh;display:grid;place-items:center;padding:calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom))}.card{width:min(100%,480px);padding:24px;border-radius:28px;background:rgba(25,29,36,.92);border:1px solid rgba(255,255,255,.12);box-shadow:0 26px 80px rgba(0,0,0,.45)}.eyebrow{font-size:11px;font-weight:850;letter-spacing:.18em;color:#8ea0b7}.card h1{font-size:30px;margin:8px 0 10px}.card p{color:#aeb7c5;line-height:1.55;font-size:14px}.status{margin:18px 0;padding:14px;border-radius:16px;background:rgba(255,255,255,.055);font-size:13px;line-height:1.5}.progress{height:7px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:14px 0 20px}.bar{height:100%;width:0;background:#2f9bff;transition:width .28s ease}.actions{display:grid;gap:10px}button,a{appearance:none;border:0;text-decoration:none;display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:16px;font-size:14px;font-weight:800}.primary{background:#168fff;color:white}.secondary{background:rgba(255,255,255,.08);color:#f7f8fb;border:1px solid rgba(255,255,255,.1)}button:disabled{opacity:.55}.note{font-size:11px!important;color:#7f8b9b!important;margin-bottom:0!important}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">PWA RECOVERY UPDATE</div>
+    <h1>Refresh iPBooster</h1>
+    <p>Memperbarui file aplikasi dan Service Worker tanpa menghapus iPBooster dari Home Screen. Game library, profile, Router, dan session di localStorage tetap disimpan.</p>
+    <div id="status" class="status">Siap memperbarui.</div>
+    <div class="progress"><div id="bar" class="bar"></div></div>
+    <div class="actions">
+      <button id="refresh" class="primary">Refresh PWA Sekarang</button>
+      <a class="secondary" href="./">Kembali ke iPBooster</a>
+    </div>
+    <p class="note">Yang dibersihkan hanya Cache Storage dan registrasi Service Worker lama. Local storage tidak dihapus.</p>
+  </main>
+<script>
+(() => {
+  const status = document.getElementById('status');
+  const bar = document.getElementById('bar');
+  const button = document.getElementById('refresh');
+  const set = (text, pct) => { status.textContent = text; bar.style.width = pct + '%'; };
+
+  async function refreshPWA(){
+    if(!navigator.onLine){ set('Tidak ada koneksi internet. Hubungkan internet lalu coba lagi.',0); return; }
+    button.disabled = true;
+    try{
+      set('Menghapus cache aplikasi lama…',15);
+      if('caches' in window){
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k.startsWith('ipbooster-')).map(k => caches.delete(k)));
+      }
+
+      set('Melepas Service Worker lama…',35);
+      if('serviceWorker' in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.filter(r => r.scope.includes('/ipbooster/')).map(r => r.unregister()));
+      }
+
+      set('Mengambil Service Worker terbaru…',58);
+      if('serviceWorker' in navigator){
+        await navigator.serviceWorker.register('./sw.js?recovery=' + Date.now(), {scope:'./', updateViaCache:'none'});
+        const ready = await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('Service Worker timeout')),10000))
+        ]);
+        await ready.update?.();
+      }
+
+      set('Memverifikasi file terbaru…',78);
+      await Promise.allSettled([
+        fetch('./version.json?t='+Date.now(),{cache:'no-store'}),
+        fetch('./index.html?t='+Date.now(),{cache:'no-store'}),
+        fetch('./app.js?t='+Date.now(),{cache:'no-store'}),
+        fetch('./pwa-update.js?t='+Date.now(),{cache:'no-store'})
+      ]);
+
+      set('Selesai. Membuka iPBooster terbaru…',100);
+      sessionStorage.setItem('ipbooster.recovery-refresh','1');
+      setTimeout(()=>location.replace('./?updated='+Date.now()),700);
+    }catch(error){
+      console.error(error);
+      set('Refresh belum berhasil: ' + (error?.message || 'unknown error') + '. Coba lagi.',0);
+      button.disabled = false;
+    }
+  }
+  button.addEventListener('click', refreshPWA);
+})();
+</script>
+</body>
+</html>
