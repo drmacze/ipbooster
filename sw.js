@@ -1,5 +1,5 @@
-const CACHE='ipbooster-v20-cyber-mode';
-const CORE=['./','./index.html','./refresh.html','./styles.css','./v3.css','./ui26.css','./ui26-cleanup.css','./app.js','./pwa-update.js','./cyber-mode.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./ui26.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
+const CACHE='ipbooster-v21-cyber-result-ui';
+const CORE=['./','./index.html','./refresh.html','./styles.css','./v3.css','./ui26.css','./ui26-cleanup.css','./app.js','./pwa-update.js','./cyber-mode.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./ui26.js','./manifest.webmanifest','./shortcuts/ipbooster-cyber-result.html','./shortcuts/ipbooster-cyber-result-preview.html','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
 
 async function cacheCore(cacheName=CACHE){
   const cache=await caches.open(cacheName);
