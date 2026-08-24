@@ -1,0 +1,22 @@
+/* UI26 declutter layer: engines stay active; duplicate technical cards stay out of the primary UX. */
+#perfCard,
+#nativeModeCard,
+.smart-play-card,
+.smart-device,
+.v3-control,
+.v3-router-card{
+  display:none!important;
+}
+
+/* Keep technical dialogs usable when explicitly opened. */
+#perfDialog,
+#nativeModeDialog,
+#routerFixDialog,
+#smartPlayDialog,
+#v3GameDialog,
+#v3PreflightDialog,
+#v3RouterDialog,
+#v3PostDialog,
+#v3SettingsDialog{
+  visibility:visible;
+}
