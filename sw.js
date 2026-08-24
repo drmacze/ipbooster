@@ -1,4 +1,4 @@
-const CACHE='ipbooster-v13-icloud-template';
+const CACHE='ipbooster-v14-router-template-button';
 const CORE=['./','./index.html','./styles.css','./v3.css','./app.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
 
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
