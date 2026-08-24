@@ -28,14 +28,17 @@ jobs:
           node --check app.js
           node --check performance-engine.js
           node --check native-mode-setup.js
+          node --check official-shortcut-template.js
           node --check smart-launch.js
           node --check router-fix.js
           node --check v3-observer-guard.js
           node --check v3-engine.js
           node --check v3-readiness.js
           node --check sw.js
-      - name: Validate manifest
-        run: python -m json.tool manifest.webmanifest > /dev/null
+      - name: Validate JSON
+        run: |
+          python -m json.tool manifest.webmanifest > /dev/null
+          python -m json.tool shortcut-template.json > /dev/null
       - name: Verify core PWA files
         run: |
           test -f index.html
@@ -43,6 +46,8 @@ jobs:
           test -f v3.css
           test -f performance-engine.js
           test -f native-mode-setup.js
+          test -f official-shortcut-template.js
+          test -f shortcut-template.json
           test -f manifest.webmanifest
           test -f assets/icon-180.png
           test -f assets/icon-512.png
