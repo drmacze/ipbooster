@@ -1,5 +1,5 @@
-const CACHE='ipbooster-v16-self-refresh';
-const CORE=['./','./index.html','./styles.css','./v3.css','./app.js','./pwa-update.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
+const CACHE='ipbooster-v17-recovery-refresh';
+const CORE=['./','./index.html','./refresh.html','./styles.css','./v3.css','./app.js','./pwa-update.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
 
 async function cacheCore(cacheName=CACHE){
   const cache=await caches.open(cacheName);
@@ -37,7 +37,10 @@ self.addEventListener('message',event=>{
     return;
   }
   if(type==='REFRESH_APP_CACHE'){
-    event.waitUntil(refreshCore());
+    event.waitUntil((async()=>{
+      const count=await refreshCore();
+      event.ports?.[0]?.postMessage?.({ok:true,count,cache:CACHE});
+    })());
   }
 });
 
@@ -78,6 +81,11 @@ self.addEventListener('fetch',event=>{
 
   if(url.pathname.endsWith('/version.json')){
     event.respondWith(fetch(event.request,{cache:'no-store'}).catch(()=>new Response('{"build":"offline"}',{headers:{'content-type':'application/json'}})));
+    return;
+  }
+
+  if(url.pathname.endsWith('/refresh.html')){
+    event.respondWith(fetch(event.request,{cache:'no-store'}).catch(()=>caches.match('./refresh.html')));
     return;
   }
 
