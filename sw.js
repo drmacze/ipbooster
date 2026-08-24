@@ -1,5 +1,5 @@
-const CACHE='ipbooster-v17-recovery-refresh';
-const CORE=['./','./index.html','./refresh.html','./styles.css','./v3.css','./app.js','./pwa-update.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
+const CACHE='ipbooster-v18-ui26';
+const CORE=['./','./index.html','./refresh.html','./styles.css','./v3.css','./ui26.css','./app.js','./pwa-update.js','./performance-engine.js','./native-mode-setup.js','./official-shortcut-template.js','./shortcut-template.json','./v3-observer-guard.js','./v3-engine.js','./router-fix.js','./smart-launch.js','./v3-readiness.js','./ui26.js','./manifest.webmanifest','./assets/icon.svg','./assets/icon-180.png','./assets/icon-512.png'];
 
 async function cacheCore(cacheName=CACHE){
   const cache=await caches.open(cacheName);
@@ -56,7 +56,10 @@ async function upgradeHtml(response){
   const guard='<script src="./v3-observer-guard.js" defer></script>';
   const engine='<script src="./v3-engine.js" defer></script>';
   const readiness='<script src="./v3-readiness.js" defer></script>';
+  const ui='<script src="./ui26.js" defer></script>';
+  const uiCss='<link rel="stylesheet" href="./ui26.css" />';
 
+  if(!html.includes('ui26.css')) html=html.includes('</head>')?html.replace('</head>',`  ${uiCss}\n</head>`):html;
   if(!html.includes('pwa-update.js')){
     const app='<script src="./app.js" defer></script>';
     html=html.includes(app)?html.replace(app,`${app}\n  ${updater}`):html.replace('</body>',`  ${updater}\n</body>`);
@@ -68,6 +71,7 @@ async function upgradeHtml(response){
     const smart='<script src="./smart-launch.js" defer></script>';
     html=html.includes(smart)?html.replace(smart,`${smart}\n  ${readiness}`):html.replace('</body>',`  ${readiness}\n</body>`);
   }
+  if(!html.includes('ui26.js')) html=html.replace('</body>',`  ${ui}\n</body>`);
 
   const headers=new Headers(response.headers);
   headers.delete('content-length');
