@@ -23,41 +23,62 @@
     toast.timer = setTimeout(() => el.classList.remove('show'), ms);
   }
 
-  function ensureUI() {
+  function ensureStyle() {
     if ($('#pwaUpdateStyle')) return;
     const style = document.createElement('style');
     style.id = 'pwaUpdateStyle';
     style.textContent = `
       .pwa-update-banner{position:fixed;left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));bottom:calc(92px + env(safe-area-inset-bottom));z-index:9998;padding:13px;border-radius:19px;border:1px solid rgba(125,190,255,.24);background:rgba(13,18,25,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 18px 55px rgba(0,0,0,.38);display:none;gap:12px;align-items:center}
-      .pwa-update-banner.show{display:flex}.pwa-update-copy{min-width:0;flex:1}.pwa-update-copy strong{display:block;font-size:12px}.pwa-update-copy small{display:block;color:var(--muted);font-size:9px;line-height:1.45;margin-top:3px}.pwa-update-actions{display:flex;gap:7px}.pwa-update-actions button{min-height:38px;margin:0;padding:0 12px;border-radius:12px;font-size:10px;white-space:nowrap}
-      .pwa-refresh-button{position:fixed;right:max(14px,env(safe-area-inset-right));top:calc(12px + env(safe-area-inset-top));z-index:9997;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(15,18,23,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:var(--text);display:grid;place-items:center;font-size:17px;box-shadow:0 8px 24px rgba(0,0,0,.24)}
-      .pwa-refresh-button.checking{animation:ipbSpin .8s linear infinite}@keyframes ipbSpin{to{transform:rotate(360deg)}}
-      @media(max-width:430px){.pwa-update-banner{align-items:flex-start}.pwa-update-actions{flex-direction:column}.pwa-update-actions button{min-width:78px}}
+      .pwa-update-banner.show{display:flex}.pwa-update-copy{min-width:0;flex:1}.pwa-update-copy strong{display:block;font-size:12px}.pwa-update-copy small{display:block;color:var(--muted);font-size:9px;line-height:1.45;margin-top:3px}.pwa-update-actions{display:flex;gap:7px}.pwa-update-actions button,.pwa-update-actions a{min-height:38px;margin:0;padding:0 12px;border-radius:12px;font-size:10px;white-space:nowrap;text-decoration:none;display:flex;align-items:center;justify-content:center}
+      #pwaRefreshButton{flex:0 0 auto}#pwaRefreshButton.checking{animation:ipbSpin .8s linear infinite}@keyframes ipbSpin{to{transform:rotate(360deg)}}
+      .pwa-refresh-fallback{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(92px + env(safe-area-inset-bottom));z-index:9997}
+      @media(max-width:430px){.pwa-update-banner{align-items:flex-start}.pwa-update-actions{flex-direction:column}.pwa-update-actions button,.pwa-update-actions a{min-width:82px}}
     `;
     document.head.appendChild(style);
+  }
 
-    const banner = document.createElement('section');
-    banner.id = 'pwaUpdateBanner';
-    banner.className = 'pwa-update-banner';
-    banner.setAttribute('role', 'status');
-    banner.innerHTML = `<div class="pwa-update-copy"><strong>Update iPBooster tersedia</strong><small id="pwaUpdateText">Versi terbaru siap dimuat tanpa install ulang PWA.</small></div><div class="pwa-update-actions"><button type="button" class="secondary-button" id="pwaUpdateLater">Nanti</button><button type="button" class="primary-button" id="pwaUpdateNow">Refresh</button></div>`;
-    document.body.appendChild(banner);
+  function mountRefreshButton() {
+    ensureStyle();
+    let refresh = $('#pwaRefreshButton');
+    if (!refresh) {
+      refresh = document.createElement('button');
+      refresh.id = 'pwaRefreshButton';
+      refresh.type = 'button';
+      refresh.className = 'icon-button glass';
+      refresh.setAttribute('aria-label', 'Refresh iPBooster PWA');
+      refresh.title = 'Refresh PWA / ambil versi terbaru';
+      refresh.textContent = '↻';
+      refresh.addEventListener('click', () => forceRefresh());
+    }
 
-    const refresh = document.createElement('button');
-    refresh.id = 'pwaRefreshButton';
-    refresh.type = 'button';
-    refresh.className = 'pwa-refresh-button';
-    refresh.setAttribute('aria-label', 'Check for iPBooster update');
-    refresh.title = 'Refresh / check update';
-    refresh.textContent = '↻';
-    document.body.appendChild(refresh);
+    const install = $('#installButton');
+    const header = install?.closest('.topbar');
+    if (header) {
+      refresh.classList.remove('pwa-refresh-fallback');
+      if (refresh.parentElement !== header) header.insertBefore(refresh, install);
+    } else if (!refresh.isConnected) {
+      refresh.classList.add('pwa-refresh-fallback');
+      document.body.appendChild(refresh);
+    }
+    return refresh;
+  }
 
-    $('#pwaUpdateNow').addEventListener('click', () => applyUpdate(latestBuild || 'manual'));
-    $('#pwaUpdateLater').addEventListener('click', () => {
-      if (latestBuild) sessionStorage.setItem(DISMISS_KEY, latestBuild);
-      banner.classList.remove('show');
-    });
-    refresh.addEventListener('click', () => checkForUpdate(true));
+  function ensureUI() {
+    ensureStyle();
+    if (!$('#pwaUpdateBanner')) {
+      const banner = document.createElement('section');
+      banner.id = 'pwaUpdateBanner';
+      banner.className = 'pwa-update-banner';
+      banner.setAttribute('role', 'status');
+      banner.innerHTML = `<div class="pwa-update-copy"><strong>Update iPBooster tersedia</strong><small id="pwaUpdateText">Versi terbaru siap dimuat tanpa install ulang PWA.</small></div><div class="pwa-update-actions"><a class="secondary-button" href="./refresh.html">Recovery</a><button type="button" class="secondary-button" id="pwaUpdateLater">Nanti</button><button type="button" class="primary-button" id="pwaUpdateNow">Refresh</button></div>`;
+      document.body.appendChild(banner);
+      $('#pwaUpdateNow').addEventListener('click', () => applyUpdate(latestBuild || `manual-${Date.now()}`));
+      $('#pwaUpdateLater').addEventListener('click', () => {
+        if (latestBuild) sessionStorage.setItem(DISMISS_KEY, latestBuild);
+        banner.classList.remove('show');
+      });
+    }
+    mountRefreshButton();
   }
 
   function showUpdate(build) {
@@ -65,7 +86,7 @@
     if (sessionStorage.getItem(DISMISS_KEY) === build) return;
     ensureUI();
     const text = $('#pwaUpdateText');
-    if (text) text.textContent = `Build baru terdeteksi. Data launcher tetap aman; hanya cache aplikasi yang diperbarui.`;
+    if (text) text.textContent = 'Build baru terdeteksi. Game library dan konfigurasi tetap aman; hanya file aplikasi yang diperbarui.';
     $('#pwaUpdateBanner')?.classList.add('show');
   }
 
@@ -79,10 +100,7 @@
   }
 
   async function fetchBuild() {
-    const response = await fetch(`${VERSION_URL}?t=${Date.now()}`, {
-      cache: 'no-store',
-      headers: { 'cache-control': 'no-cache' }
-    });
+    const response = await fetch(`${VERSION_URL}?t=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`version ${response.status}`);
     const data = await response.json();
     return String(data.build || data.version || '').trim();
@@ -104,28 +122,60 @@
       const stored = localStorage.getItem(BUILD_KEY);
       const refreshing = sessionStorage.getItem(REFRESH_KEY);
 
-      if (!stored) {
-        localStorage.setItem(BUILD_KEY, build);
-      } else if (refreshing === build) {
+      if (!stored) localStorage.setItem(BUILD_KEY, build);
+      else if (refreshing === build) {
         localStorage.setItem(BUILD_KEY, build);
         sessionStorage.removeItem(REFRESH_KEY);
         $('#pwaUpdateBanner')?.classList.remove('show');
-        if (manual) toast('iPBooster sudah memakai build terbaru.');
-      } else if (stored !== build) {
-        showUpdate(build);
-      } else if (manual) {
-        toast('iPBooster sudah versi terbaru.');
-      }
+      } else if (stored !== build) showUpdate(build);
+      else if (manual) toast('iPBooster sudah versi terbaru.');
 
       const reg = await getRegistration();
       await reg?.update?.();
       if (reg?.waiting && build !== stored) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
     } catch (error) {
       console.warn('PWA update check:', error);
-      if (manual) toast('Belum bisa mengecek update. Coba lagi sebentar.');
+      if (manual) toast('Belum bisa mengecek update. Gunakan Recovery bila cache masih lama.');
     } finally {
       checking = false;
       $('#pwaRefreshButton')?.classList.remove('checking');
+    }
+  }
+
+  function requestWorkerRefresh(controller) {
+    if (!controller) return Promise.resolve(false);
+    return new Promise(resolve => {
+      const channel = new MessageChannel();
+      const timeout = setTimeout(() => resolve(false), 4500);
+      channel.port1.onmessage = event => {
+        clearTimeout(timeout);
+        resolve(Boolean(event.data?.ok));
+      };
+      try {
+        controller.postMessage({ type: 'REFRESH_APP_CACHE' }, [channel.port2]);
+      } catch {
+        clearTimeout(timeout);
+        resolve(false);
+      }
+    });
+  }
+
+  async function forceRefresh() {
+    if (!navigator.onLine) {
+      toast('Hubungkan internet dulu untuk refresh PWA.');
+      return;
+    }
+    ensureUI();
+    const button = $('#pwaRefreshButton');
+    button?.classList.add('checking');
+    try {
+      let build = '';
+      try { build = await fetchBuild(); } catch {}
+      await applyUpdate(build || `manual-${Date.now()}`);
+    } catch {
+      location.href = './refresh.html';
+    } finally {
+      button?.classList.remove('checking');
     }
   }
 
@@ -142,26 +192,29 @@
 
     try {
       const reg = await getRegistration();
-      if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      navigator.serviceWorker.controller?.postMessage({ type: 'REFRESH_APP_CACHE' });
-      await reg?.update?.();
+      if (!reg || !navigator.serviceWorker.controller) {
+        location.href = './refresh.html';
+        return;
+      }
+      await reg.update?.();
+      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      await requestWorkerRefresh(navigator.serviceWorker.controller);
 
-      await new Promise(resolve => setTimeout(resolve, 650));
       const url = new URL(location.href);
       url.searchParams.set('__ipb_refresh', target.slice(0, 12));
       location.replace(url.href);
     } catch (error) {
       console.warn('PWA refresh:', error);
       sessionStorage.removeItem(REFRESH_KEY);
-      if (now) { now.disabled = false; now.textContent = 'Refresh'; }
-      toast('Refresh gagal. Coba lagi.');
+      location.href = './refresh.html';
     }
   }
 
   function cleanRefreshParam() {
     const url = new URL(location.href);
-    if (!url.searchParams.has('__ipb_refresh')) return;
+    if (!url.searchParams.has('__ipb_refresh') && !url.searchParams.has('updated')) return;
     url.searchParams.delete('__ipb_refresh');
+    url.searchParams.delete('updated');
     history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
   }
 
@@ -170,10 +223,10 @@
     let controllerReloaded = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (controllerReloaded) return;
-      controllerReloaded = true;
       const pending = sessionStorage.getItem(REFRESH_KEY);
       if (!pending) return;
-      setTimeout(() => location.reload(), 120);
+      controllerReloaded = true;
+      setTimeout(() => location.reload(), 140);
     });
   }
 
@@ -181,9 +234,9 @@
   cleanRefreshParam();
   bindWorkerLifecycle();
   setTimeout(() => checkForUpdate(false), 900);
-  addEventListener('pageshow', () => setTimeout(() => checkForUpdate(false), 700));
+  addEventListener('pageshow', () => { mountRefreshButton(); setTimeout(() => checkForUpdate(false), 700); });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') setTimeout(() => checkForUpdate(false), 700);
+    if (document.visibilityState === 'visible') { mountRefreshButton(); setTimeout(() => checkForUpdate(false), 700); }
   });
   addEventListener('online', () => setTimeout(() => checkForUpdate(false), 500));
 })();
