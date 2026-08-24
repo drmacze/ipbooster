@@ -31,7 +31,7 @@ jobs:
           from datetime import datetime, timezone
           data = {
             "build": os.environ["GITHUB_SHA"],
-            "version": "3.2",
+            "version": "4.0-ui26",
             "builtAt": datetime.now(timezone.utc).isoformat()
           }
           with open("version.json", "w", encoding="utf-8") as f:
@@ -50,6 +50,7 @@ jobs:
           node --check v3-observer-guard.js
           node --check v3-engine.js
           node --check v3-readiness.js
+          node --check ui26.js
           node --check sw.js
 
       - name: Validate JSON
@@ -63,6 +64,8 @@ jobs:
           test -f index.html
           test -f styles.css
           test -f v3.css
+          test -f ui26.css
+          test -f ui26.js
           test -f pwa-update.js
           test -f performance-engine.js
           test -f native-mode-setup.js
