@@ -65,6 +65,7 @@ jobs:
           test -f styles.css
           test -f v3.css
           test -f ui26.css
+          test -f ui26-cleanup.css
           test -f ui26.js
           test -f pwa-update.js
           test -f performance-engine.js
